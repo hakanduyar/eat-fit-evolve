@@ -7,6 +7,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import Nutrition from "./pages/Nutrition";
+import Activity from "./pages/Activity";
+import Clients from "./pages/Clients";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -28,8 +31,10 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="/" element={<Index />} />
+              <Route path="/nutrition" element={<Nutrition />} />
+              <Route path="/activity" element={<Activity />} />
+              <Route path="/clients" element={<Clients />} />
             </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

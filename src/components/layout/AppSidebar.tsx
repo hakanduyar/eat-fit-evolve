@@ -19,17 +19,34 @@ import {
   Settings,
   Activity,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation, Link } from "react-router-dom";
 
-const navigation = [
-  { name: 'Dashboard', icon: Home, href: '#', current: true },
-  { name: 'Beslenme', icon: Apple, href: '#', current: false },
-  { name: 'Aktivite', icon: Activity, href: '#', current: false },
-  { name: 'Danışanlar', icon: Users, href: '#', current: false },
-  { name: 'Randevular', icon: Calendar, href: '#', current: false },
-  { name: 'Profil', icon: User, href: '#', current: false },
-];
+const AppSidebar = () => {
+  const { profile } = useAuth();
+  const location = useLocation();
 
-export function AppSidebar() {
+  const baseNavigation = [
+    { name: 'Dashboard', icon: Home, href: '/', current: location.pathname === '/' },
+    { name: 'Beslenme', icon: Apple, href: '/nutrition', current: location.pathname === '/nutrition' },
+    { name: 'Aktivite', icon: Activity, href: '/activity', current: location.pathname === '/activity' },
+  ];
+
+  const professionalNavigation = [
+    { name: 'Danışanlar', icon: Users, href: '/clients', current: location.pathname === '/clients' },
+    { name: 'Randevular', icon: Calendar, href: '/appointments', current: location.pathname === '/appointments' },
+  ];
+
+  const profileNavigation = [
+    { name: 'Profil', icon: User, href: '/profile', current: location.pathname === '/profile' },
+  ];
+
+  const navigation = [
+    ...baseNavigation,
+    ...(profile?.role === 'dietitian' || profile?.role === 'trainer' ? professionalNavigation : []),
+    ...profileNavigation
+  ];
+
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader>
@@ -47,14 +64,17 @@ export function AppSidebar() {
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
+                    asChild
                     tooltip={item.name}
                     isActive={item.current}
                     className="justify-start"
                   >
-                    <item.icon className="size-5 shrink-0" />
-                    <span className="group-data-[collapsed=true]:hidden">
-                      {item.name}
-                    </span>
+                    <Link to={item.href}>
+                      <item.icon className="size-5 shrink-0" />
+                      <span className="group-data-[collapsed=true]:hidden">
+                        {item.name}
+                      </span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -80,8 +100,14 @@ export function AppSidebar() {
                         <User className="w-5 h-5 text-white" />
                     </div>
                     <div className="group-data-[collapsed=true]:hidden">
-                        <p className="text-sm font-medium text-gray-900">Ahmet Yılmaz</p>
-                        <p className="text-xs text-gray-500">Kullanıcı</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {profile?.full_name || 'Kullanıcı'}
+                        </p>
+                        <p className="text-xs text-gray-500 capitalize">
+                          {profile?.role === 'user' ? 'Kullanıcı' : 
+                           profile?.role === 'dietitian' ? 'Diyetisyen' : 
+                           profile?.role === 'trainer' ? 'Antrenör' : 'Kullanıcı'}
+                        </p>
                     </div>
                  </div>
             </SidebarMenuItem>
@@ -89,4 +115,6 @@ export function AppSidebar() {
       </SidebarFooter>
     </Sidebar>
   );
-}
+};
+
+export { AppSidebar };

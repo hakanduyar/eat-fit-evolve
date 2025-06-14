@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
+type Gender = 'male' | 'female' | 'other';
+type Goal = 'lose_weight' | 'gain_weight' | 'maintain';
+type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+
 export function ProfileEditForm() {
   const { profile } = useAuth();
   const { userProfile, professionalProfile, loading } = useUserProfile();
@@ -20,18 +24,18 @@ export function ProfileEditForm() {
 
   const [userFormData, setUserFormData] = useState({
     birth_date: userProfile?.birth_date || '',
-    gender: userProfile?.gender || '',
-    height: userProfile?.height || '',
-    weight: userProfile?.weight || '',
-    target_weight: userProfile?.target_weight || '',
-    activity_level: userProfile?.activity_level || 'moderate',
-    goal: userProfile?.goal || ''
+    gender: (userProfile?.gender as Gender) || '',
+    height: userProfile?.height?.toString() || '',
+    weight: userProfile?.weight?.toString() || '',
+    target_weight: userProfile?.target_weight?.toString() || '',
+    activity_level: (userProfile?.activity_level as ActivityLevel) || 'moderate',
+    goal: (userProfile?.goal as Goal) || ''
   });
 
   const [professionalFormData, setProfessionalFormData] = useState({
     license_number: professionalProfile?.license_number || '',
-    experience_years: professionalProfile?.experience_years || '',
-    consultation_fee: professionalProfile?.consultation_fee || '',
+    experience_years: professionalProfile?.experience_years?.toString() || '',
+    consultation_fee: professionalProfile?.consultation_fee?.toString() || '',
     diploma_info: professionalProfile?.diploma_info || '',
     specializations: professionalProfile?.specializations?.join(', ') || ''
   });
@@ -44,13 +48,13 @@ export function ProfileEditForm() {
     setSaving(true);
     try {
       const profileData = {
-        ...userFormData,
+        birth_date: userFormData.birth_date || null,
+        gender: userFormData.gender as Gender || null,
         height: userFormData.height ? parseInt(userFormData.height) : null,
         weight: userFormData.weight ? parseFloat(userFormData.weight) : null,
         target_weight: userFormData.target_weight ? parseFloat(userFormData.target_weight) : null,
-        birth_date: userFormData.birth_date || null,
-        gender: userFormData.gender || null,
-        goal: userFormData.goal || null
+        activity_level: userFormData.activity_level,
+        goal: userFormData.goal as Goal || null
       };
 
       let result;
@@ -81,12 +85,11 @@ export function ProfileEditForm() {
     setSaving(true);
     try {
       const profileData = {
-        ...professionalFormData,
+        license_number: professionalFormData.license_number || null,
         experience_years: professionalFormData.experience_years ? parseInt(professionalFormData.experience_years) : null,
         consultation_fee: professionalFormData.consultation_fee ? parseFloat(professionalFormData.consultation_fee) : null,
-        specializations: professionalFormData.specializations ? professionalFormData.specializations.split(',').map(s => s.trim()) : null,
-        license_number: professionalFormData.license_number || null,
-        diploma_info: professionalFormData.diploma_info || null
+        diploma_info: professionalFormData.diploma_info || null,
+        specializations: professionalFormData.specializations ? professionalFormData.specializations.split(',').map(s => s.trim()) : null
       };
 
       let result;
@@ -136,7 +139,7 @@ export function ProfileEditForm() {
                 <Label htmlFor="gender">Cinsiyet</Label>
                 <Select 
                   value={userFormData.gender} 
-                  onValueChange={(value) => setUserFormData(prev => ({ ...prev, gender: value }))}
+                  onValueChange={(value: Gender) => setUserFormData(prev => ({ ...prev, gender: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Cinsiyet seçin" />
@@ -181,7 +184,7 @@ export function ProfileEditForm() {
                 <Label htmlFor="activity_level">Aktivite Seviyesi</Label>
                 <Select 
                   value={userFormData.activity_level} 
-                  onValueChange={(value) => setUserFormData(prev => ({ ...prev, activity_level: value }))}
+                  onValueChange={(value: ActivityLevel) => setUserFormData(prev => ({ ...prev, activity_level: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -199,7 +202,7 @@ export function ProfileEditForm() {
                 <Label htmlFor="goal">Hedef</Label>
                 <Select 
                   value={userFormData.goal} 
-                  onValueChange={(value) => setUserFormData(prev => ({ ...prev, goal: value }))}
+                  onValueChange={(value: Goal) => setUserFormData(prev => ({ ...prev, goal: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Hedef seçin" />

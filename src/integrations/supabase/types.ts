@@ -12,33 +12,39 @@ export type Database = {
       professional_profiles: {
         Row: {
           approval_date: string | null
+          consultation_fee: number | null
           created_at: string
           diploma_info: string | null
           experience_years: number | null
           id: string
           is_approved: boolean
+          license_number: string | null
           profile_id: string
           specializations: string[] | null
           updated_at: string
         }
         Insert: {
           approval_date?: string | null
+          consultation_fee?: number | null
           created_at?: string
           diploma_info?: string | null
           experience_years?: number | null
           id?: string
           is_approved?: boolean
+          license_number?: string | null
           profile_id: string
           specializations?: string[] | null
           updated_at?: string
         }
         Update: {
           approval_date?: string | null
+          consultation_fee?: number | null
           created_at?: string
           diploma_info?: string | null
           experience_years?: number | null
           id?: string
           is_approved?: boolean
+          license_number?: string | null
           profile_id?: string
           specializations?: string[] | null
           updated_at?: string
@@ -91,6 +97,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          activity_level: string | null
           birth_date: string | null
           created_at: string
           gender: Database["public"]["Enums"]["gender"] | null
@@ -98,10 +105,12 @@ export type Database = {
           height: number | null
           id: string
           profile_id: string
+          target_weight: number | null
           updated_at: string
           weight: number | null
         }
         Insert: {
+          activity_level?: string | null
           birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender"] | null
@@ -109,10 +118,12 @@ export type Database = {
           height?: number | null
           id?: string
           profile_id: string
+          target_weight?: number | null
           updated_at?: string
           weight?: number | null
         }
         Update: {
+          activity_level?: string | null
           birth_date?: string | null
           created_at?: string
           gender?: Database["public"]["Enums"]["gender"] | null
@@ -120,6 +131,7 @@ export type Database = {
           height?: number | null
           id?: string
           profile_id?: string
+          target_weight?: number | null
           updated_at?: string
           weight?: number | null
         }

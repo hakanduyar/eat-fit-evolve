@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,33 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-
-const registerSchema = z.object({
-  email: z.string().email('Geçerli bir email adresi girin'),
-  password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır')
-    .regex(/[A-Z]/, 'Şifre en az bir büyük harf içermelidir')
-    .regex(/[a-z]/, 'Şifre en az bir küçük harf içermelidir')
-    .regex(/[0-9]/, 'Şifre en az bir rakam içermelidir'),
-  confirmPassword: z.string(),
-  fullName: z.string().min(2, 'Ad soyad en az 2 karakter olmalıdır'),
-  phone: z.string().optional(),
-  role: z.enum(['user', 'dietitian', 'trainer']),
-  // User fields
-  birthDate: z.string().optional(),
-  gender: z.enum(['male', 'female', 'other']).optional(),
-  height: z.string().optional(),
-  weight: z.string().optional(),
-  goal: z.enum(['lose_weight', 'gain_weight', 'maintain']).optional(),
-  // Professional fields
-  diplomaInfo: z.string().optional(),
-  experienceYears: z.string().optional(),
-  specializations: z.string().optional()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Şifreler eşleşmiyor",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { registerSchema, type RegisterFormData, activityLevelDisplayNames, activityLevels, formatCurrency } from '@/lib/validationSchemas';
 
 interface RegisterFormProps {
   onLoginClick: () => void;
@@ -60,7 +33,8 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: 'user'
+      role: 'user',
+      activityLevel: 'moderate'
     }
   });
 
@@ -78,9 +52,13 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
         ...(data.height && { height: parseInt(data.height) }),
         ...(data.weight && { weight: parseFloat(data.weight) }),
         ...(data.goal && { goal: data.goal }),
+        ...(data.targetWeight && { target_weight: parseFloat(data.targetWeight) }),
+        ...(data.activityLevel && { activity_level: data.activityLevel }),
         ...(data.diplomaInfo && { diploma_info: data.diplomaInfo }),
         ...(data.experienceYears && { experience_years: parseInt(data.experienceYears) }),
-        ...(data.specializations && { specializations: data.specializations.split(',').map(s => s.trim()) })
+        ...(data.specializations && { specializations: data.specializations.split(',').map(s => s.trim()) }),
+        ...(data.licenseNumber && { license_number: data.licenseNumber }),
+        ...(data.consultationFee && { consultation_fee: parseFloat(data.consultationFee) })
       };
 
       const { error } = await signUp(data.email, data.password, userData);
@@ -267,6 +245,20 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
           </div>
 
           <div>
+            <Label htmlFor="targetWeight">Hedef Kilo (kg)</Label>
+            <Input
+              id="targetWeight"
+              type="number"
+              step="0.1"
+              placeholder="65.0"
+              {...register('targetWeight')}
+            />
+            {errors.targetWeight && (
+              <p className="text-sm text-red-500 mt-1">{errors.targetWeight.message}</p>
+            )}
+          </div>
+
+          <div>
             <Label htmlFor="goal">Hedef</Label>
             <Select onValueChange={(value) => setValue('goal', value as 'lose_weight' | 'gain_weight' | 'maintain')}>
               <SelectTrigger>
@@ -279,12 +271,55 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
               </SelectContent>
             </Select>
           </div>
+
+          <div>
+            <Label htmlFor="activityLevel">Aktivite Seviyesi</Label>
+            <Select onValueChange={(value) => setValue('activityLevel', value as typeof activityLevels[number])}>
+              <SelectTrigger>
+                <SelectValue placeholder="Aktivite seviyenizi seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {activityLevels.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {activityLevelDisplayNames[level]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </>
       )}
 
       {/* Professional-specific fields */}
       {(role === 'dietitian' || role === 'trainer') && (
         <>
+          <div>
+            <Label htmlFor="licenseNumber">Lisans Numarası *</Label>
+            <Input
+              id="licenseNumber"
+              placeholder="Örn: DYT-2024-001"
+              {...register('licenseNumber')}
+            />
+            {errors.licenseNumber && (
+              <p className="text-sm text-red-500 mt-1">{errors.licenseNumber.message}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="consultationFee">Danışmanlık Ücreti (₺)</Label>
+            <Input
+              id="consultationFee"
+              type="number"
+              step="0.01"
+              placeholder="150.00"
+              {...register('consultationFee')}
+            />
+            <p className="text-xs text-gray-500 mt-1">0 yazarsanız ücretsiz danışmanlık veriyorsunuz</p>
+            {errors.consultationFee && (
+              <p className="text-sm text-red-500 mt-1">{errors.consultationFee.message}</p>
+            )}
+          </div>
+
           <div>
             <Label htmlFor="diplomaInfo">Diploma/Sertifika Bilgisi</Label>
             <Textarea
@@ -311,6 +346,23 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
               placeholder="Spor beslenmesi, kilo yönetimi (virgülle ayırın)"
               {...register('specializations')}
             />
+          </div>
+
+          {/* Activity level for professionals too */}
+          <div>
+            <Label htmlFor="activityLevel">Aktivite Seviyesi</Label>
+            <Select onValueChange={(value) => setValue('activityLevel', value as typeof activityLevels[number])}>
+              <SelectTrigger>
+                <SelectValue placeholder="Aktivite seviyenizi seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {activityLevels.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {activityLevelDisplayNames[level]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </>
       )}

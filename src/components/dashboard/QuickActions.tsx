@@ -97,31 +97,31 @@ export const QuickActions = () => {
   const actions = profile?.role === 'user' ? userActions : professionalActions;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Hızlı İşlemler</CardTitle>
-        <CardDescription>
+    <Card className="w-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg md:text-xl">Hızlı İşlemler</CardTitle>
+        <CardDescription className="text-sm">
           {profile?.role === 'user' 
             ? 'Sık kullanılan özellikler' 
             : 'Danışan yönetimi işlemleri'
           }
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-3">
+      <CardContent className="p-3 md:p-6">
+        <div className="grid grid-cols-1 gap-2 md:gap-3">
           {actions.map((action, index) => (
             <Button
               key={index}
               variant="outline"
-              className="h-auto p-4 justify-start hover:shadow-md transition-all"
+              className="h-auto p-3 md:p-4 justify-start hover:shadow-md transition-all text-left"
               onClick={action.action}
             >
-              <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mr-3 flex-shrink-0`}>
-                <action.icon className="w-5 h-5 text-white" />
+              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg ${action.color} flex items-center justify-center mr-3 flex-shrink-0`}>
+                <action.icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
-              <div className="text-left">
-                <div className="font-medium text-gray-900">{action.title}</div>
-                <div className="text-sm text-gray-500">{action.description}</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-gray-900 text-sm md:text-base truncate">{action.title}</div>
+                <div className="text-xs md:text-sm text-gray-500 truncate">{action.description}</div>
               </div>
             </Button>
           ))}

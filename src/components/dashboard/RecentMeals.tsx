@@ -1,123 +1,64 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, Users, Calendar } from "lucide-react";
+import { Utensils, Plus, Clock } from "lucide-react";
+import { useMeals } from "@/hooks/useMeals";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const RecentMeals = () => {
   const { profile } = useAuth();
+  const { meals, loading } = useMeals();
 
-  const recentMeals = [
-    {
-      name: "Kahvaltı",
-      time: "08:30",
-      calories: 420,
-      items: ["Omlet (2 yumurta)", "Tam buğday ekmeği", "Avokado"],
-      status: "completed"
-    },
-    {
-      name: "Ara Öğün",
-      time: "11:00",
-      calories: 150,
-      items: ["Yunan yoğurdu", "Muz", "Badem"],
-      status: "completed"
-    },
-    {
-      name: "Öğle Yemeği",
-      time: "13:30",
-      calories: 580,
-      items: ["Izgara tavuk", "Quinoa", "Karışık salata"],
-      status: "completed"
-    },
-    {
-      name: "Akşam Yemeği",
-      time: "19:00",
-      calories: 0,
-      items: [],
-      status: "pending"
-    }
-  ];
+  const getMealTypeDisplayName = (mealType: string) => {
+    const mealNames = {
+      breakfast: 'Kahvaltı',
+      lunch: 'Öğle Yemeği',
+      dinner: 'Akşam Yemeği',
+      snack: 'Ara Öğün'
+    };
+    return mealNames[mealType as keyof typeof mealNames] || mealType;
+  };
 
-  const recentAppointments = [
-    {
-      client: "Ayşe Yılmaz",
-      time: "14:00",
-      date: "Bugün",
-      type: "Beslenme Konsültasyonu",
-      status: "confirmed"
-    },
-    {
-      client: "Mehmet Kaya",
-      time: "10:30",
-      date: "Yarın",
-      type: "Kontrol Muayenesi",
-      status: "confirmed"
-    },
-    {
-      client: "Fatma Demir",
-      time: "16:15",
-      date: "Pazartesi",
-      type: "Plan Revizyonu",
-      status: "pending"
-    },
-    {
-      client: "Ali Özkan",
-      time: "09:00",
-      date: "Salı",
-      type: "İlk Görüşme",
-      status: "new"
-    }
-  ];
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-  if (profile?.role === 'user') {
+  if (profile?.role !== 'user') {
     return (
-      <Card className="w-full">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 space-y-2 sm:space-y-0">
-          <div>
-            <CardTitle className="text-lg md:text-xl">Bugünkü Öğünler</CardTitle>
-            <CardDescription className="text-sm">Günlük beslenme planınız</CardDescription>
-          </div>
-          <Button size="sm" className="flex items-center gap-2 self-start sm:self-auto">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Yemek Ekle</span>
-            <span className="sm:hidden">Ekle</span>
-          </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Utensils className="w-5 h-5" />
+            Danışan Aktivitesi
+          </CardTitle>
+          <CardDescription>Son beslenme kayıtları</CardDescription>
         </CardHeader>
-        <CardContent className="p-3 md:p-6">
-          <div className="space-y-3 md:space-y-4">
-            {recentMeals.map((meal, index) => (
-              <div 
-                key={index} 
-                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 rounded-lg border space-y-3 sm:space-y-0 ${
-                  meal.status === 'completed' ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-medium text-gray-900 text-sm md:text-base">{meal.name}</h4>
-                    <Badge variant={meal.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
-                      {meal.status === 'completed' ? 'Tamamlandı' : 'Bekliyor'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 mb-1">
-                    <Clock className="w-3 h-3 md:w-4 md:h-4" />
-                    <span>{meal.time}</span>
-                    {meal.calories > 0 && (
-                      <span className="ml-4 font-medium">{meal.calories} kcal</span>
-                    )}
-                  </div>
-                  {meal.items.length > 0 && (
-                    <p className="text-xs md:text-sm text-gray-500 truncate sm:whitespace-normal">
-                      {meal.items.join(", ")}
-                    </p>
-                  )}
-                </div>
-                <Button variant="outline" size="sm" className="self-start sm:self-auto">
-                  {meal.status === 'completed' ? 'Düzenle' : 'Ekle'}
-                </Button>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div>
+                <h4 className="font-medium">Ahmet K. - Kahvaltı</h4>
+                <p className="text-sm text-gray-600">420 kalori • 45 dk önce</p>
               </div>
-            ))}
+              <Button variant="outline" size="sm">Detay</Button>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div>
+                <h4 className="font-medium">Fatma S. - Öğle Yemeği</h4>
+                <p className="text-sm text-gray-600">580 kalori • 2 saat önce</p>
+              </div>
+              <Button variant="outline" size="sm">Detay</Button>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div>
+                <h4 className="font-medium">Mehmet Y. - Ara Öğün</h4>
+                <p className="text-sm text-gray-600">150 kalori • 3 saat önce</p>
+              </div>
+              <Button variant="outline" size="sm">Detay</Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -125,58 +66,56 @@ export const RecentMeals = () => {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 space-y-2 sm:space-y-0">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-lg md:text-xl">Yaklaşan Randevular</CardTitle>
-          <CardDescription className="text-sm">Bu haftaki konsültasyonlarınız</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Utensils className="w-5 h-5" />
+            Bugünkü Öğünler
+          </CardTitle>
+          <CardDescription>Günlük beslenme takibiniz</CardDescription>
         </div>
-        <Button size="sm" className="flex items-center gap-2 self-start sm:self-auto">
-          <Calendar className="w-4 h-4" />
-          <span className="hidden sm:inline">Randevu Ekle</span>
-          <span className="sm:hidden">Ekle</span>
+        <Button size="sm" className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Öğün Ekle
         </Button>
       </CardHeader>
-      <CardContent className="p-3 md:p-6">
-        <div className="space-y-3 md:space-y-4">
-          {recentAppointments.map((appointment, index) => (
-            <div 
-              key={index} 
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 rounded-lg border bg-white hover:bg-gray-50 transition-colors space-y-3 sm:space-y-0"
-            >
-              <div className="flex items-start sm:items-center gap-3">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 md:w-5 md:h-5 text-white" />
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : meals.length > 0 ? (
+          <div className="space-y-4">
+            {meals.map((meal) => (
+              <div key={meal.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <h4 className="font-medium">{getMealTypeDisplayName(meal.meal_type)}</h4>
+                  <p className="text-sm text-gray-600">
+                    {meal.total_calories || 0} kalori
+                    {meal.created_at && (
+                      <>
+                        {" • "}
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        {formatTime(meal.created_at)}
+                      </>
+                    )}
+                  </p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-medium text-gray-900 text-sm md:text-base truncate">{appointment.client}</h4>
-                  <p className="text-xs md:text-sm text-gray-600 truncate">{appointment.type}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                    <span className="text-xs text-gray-500 truncate">
-                      {appointment.date} - {appointment.time}
-                    </span>
-                  </div>
-                </div>
+                <Button variant="outline" size="sm">Düzenle</Button>
               </div>
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <Badge 
-                  variant={
-                    appointment.status === 'confirmed' ? 'default' : 
-                    appointment.status === 'new' ? 'secondary' : 'outline'
-                  }
-                  className="text-xs"
-                >
-                  {appointment.status === 'confirmed' ? 'Onaylandı' : 
-                   appointment.status === 'new' ? 'Yeni' : 'Bekliyor'}
-                </Badge>
-                <Button variant="outline" size="sm">
-                  Detay
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <Utensils className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p className="mb-4">Henüz öğün kaydı yok</p>
+            <Button className="flex items-center gap-2 mx-auto">
+              <Plus className="w-4 h-4" />
+              İlk Öğününüzü Ekleyin
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

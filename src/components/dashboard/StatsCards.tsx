@@ -2,42 +2,58 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Apple, Activity, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserGoals } from "@/hooks/useUserGoals";
+import { useMeals } from "@/hooks/useMeals";
+import { useActivities } from "@/hooks/useActivities";
+import { useWaterIntake } from "@/hooks/useWaterIntake";
 
 export const StatsCards = () => {
   const { profile } = useAuth();
+  const { goals } = useUserGoals();
+  const { getTotalNutrition } = useMeals();
+  const { getTotalStats } = useActivities();
+  const { getTotalWater, getGlassCount } = useWaterIntake();
+
+  const todayNutrition = getTotalNutrition();
+  const todayActivity = getTotalStats();
+  const todayWater = getTotalWater();
 
   const userStats = [
     {
       title: "Günlük Kalori",
-      value: "1,847",
-      target: "2,200",
-      description: "+12% dünden",
+      value: todayNutrition.calories.toString(),
+      target: goals?.daily_calories?.toString() || "2,200",
+      description: goals ? `Hedefin %${Math.round((todayNutrition.calories / (goals.daily_calories || 2200)) * 100)}'si` : "+12% dünden",
       icon: TrendingUp,
-      color: "text-blue-600"
+      color: "text-blue-600",
+      progress: goals ? (todayNutrition.calories / (goals.daily_calories || 2200)) * 100 : 60
     },
     {
       title: "Protein",
-      value: "98g",
-      target: "120g",
-      description: "Hedefin %82'si",
+      value: `${Math.round(todayNutrition.protein)}g`,
+      target: `${goals?.daily_protein || 120}g`,
+      description: goals ? `Hedefin %${Math.round((todayNutrition.protein / (goals.daily_protein || 120)) * 100)}'si` : "Hedefin %82'si",
       icon: Apple,
-      color: "text-green-600"
+      color: "text-green-600",
+      progress: goals ? (todayNutrition.protein / (goals.daily_protein || 120)) * 100 : 82
     },
     {
       title: "Aktif Dakika",
-      value: "45 dk",
+      value: `${todayActivity.duration} dk`,
       target: "60 dk",
       description: "Bugün",
       icon: Activity,
-      color: "text-orange-600"
+      color: "text-orange-600",
+      progress: (todayActivity.duration / 60) * 100
     },
     {
       title: "Su Tüketimi",
-      value: "1.8L",
+      value: `${(todayWater / 1000).toFixed(1)}L`,
       target: "2.5L",
-      description: "8 bardak",
+      description: `${getGlassCount()} bardak`,
       icon: Target,
-      color: "text-cyan-600"
+      color: "text-cyan-600",
+      progress: (todayWater / 2500) * 100
     }
   ];
 
@@ -48,7 +64,8 @@ export const StatsCards = () => {
       target: "",
       description: "+3 bu ay",
       icon: TrendingUp,
-      color: "text-blue-600"
+      color: "text-blue-600",
+      progress: 0
     },
     {
       title: "Aktif Danışan",
@@ -56,7 +73,8 @@ export const StatsCards = () => {
       target: "",
       description: "Son 30 gün",
       icon: Activity,
-      color: "text-green-600"
+      color: "text-green-600",
+      progress: 0
     },
     {
       title: "Bu Ay Gelir",
@@ -64,7 +82,8 @@ export const StatsCards = () => {
       target: "",
       description: "+15% geçen ay",
       icon: Target,
-      color: "text-purple-600"
+      color: "text-purple-600",
+      progress: 0
     },
     {
       title: "Ortalama Rating",
@@ -72,7 +91,8 @@ export const StatsCards = () => {
       target: "5.0",
       description: "47 değerlendirme",
       icon: Apple,
-      color: "text-yellow-600"
+      color: "text-yellow-600",
+      progress: 96
     }
   ];
 
@@ -100,12 +120,12 @@ export const StatsCards = () => {
             <p className="text-xs text-green-600 mt-1">
               {stat.description}
             </p>
-            {stat.target && (
+            {(stat.target || stat.progress > 0) && (
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <div 
                   className={`h-2 rounded-full ${stat.color.replace('text-', 'bg-')}`}
                   style={{ 
-                    width: `${Math.floor(Math.random() * 40) + 40}%` 
+                    width: `${Math.min(Math.max(stat.progress, 0), 100)}%` 
                   }}
                 ></div>
               </div>

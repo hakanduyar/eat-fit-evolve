@@ -1,127 +1,105 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { useAuth } from "@/contexts/AuthContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useMeals } from "@/hooks/useMeals";
+import { useUserGoals } from "@/hooks/useUserGoals";
 
 export const NutritionChart = () => {
-  const { profile } = useAuth();
+  const { getTotalNutrition } = useMeals();
+  const { goals } = useUserGoals();
 
-  const nutritionData = [
-    { day: 'Pzt', kalori: 2100, protein: 95, karbonhidrat: 250 },
-    { day: 'Sal', kalori: 1950, protein: 88, karbonhidrat: 220 },
-    { day: 'Çar', kalori: 2200, protein: 102, karbonhidrat: 275 },
-    { day: 'Per', kalori: 1850, protein: 85, karbonhidrat: 200 },
-    { day: 'Cum', kalori: 2050, protein: 92, karbonhidrat: 240 },
-    { day: 'Cmt', kalori: 1900, protein: 90, karbonhidrat: 210 },
-    { day: 'Paz', kalori: 1847, protein: 98, karbonhidrat: 215 }
+  const todayNutrition = getTotalNutrition();
+
+  // Weekly mock data - in a real app, you'd fetch this from the database
+  const weeklyData = [
+    { day: 'Pzt', calories: 1980, protein: 95, carbs: 240, fat: 65 },
+    { day: 'Sal', calories: 2150, protein: 110, carbs: 260, fat: 72 },
+    { day: 'Çar', calories: 1890, protein: 88, carbs: 220, fat: 58 },
+    { day: 'Per', calories: 2050, protein: 102, carbs: 250, fat: 68 },
+    { day: 'Cum', calories: 2200, protein: 115, carbs: 275, fat: 75 },
+    { day: 'Cmt', calories: 1750, protein: 82, carbs: 200, fat: 55 },
+    { day: 'Paz', calories: todayNutrition.calories, protein: todayNutrition.protein, carbs: todayNutrition.carbs, fat: todayNutrition.fat }
   ];
 
-  const clientProgressData = [
-    { month: 'Oca', newClients: 4, totalClients: 15 },
-    { month: 'Şub', newClients: 3, totalClients: 18 },
-    { month: 'Mar', newClients: 5, totalClients: 23 },
-    { month: 'Nis', newClients: 2, totalClients: 25 },
-    { month: 'May', newClients: 6, totalClients: 31 },
-    { month: 'Haz', newClients: 4, totalClients: 35 }
+  const macroData = [
+    { name: 'Protein', value: Math.round(todayNutrition.protein), color: '#10b981', target: goals?.daily_protein || 120 },
+    { name: 'Karbonhidrat', value: Math.round(todayNutrition.carbs), color: '#3b82f6', target: goals?.daily_carbs || 250 },
+    { name: 'Yağ', value: Math.round(todayNutrition.fat), color: '#f59e0b', target: goals?.daily_fat || 65 }
   ];
 
-  if (profile?.role === 'user') {
-    return (
-      <Card className="w-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg md:text-xl">Haftalık Beslenme Özeti</CardTitle>
-          <CardDescription className="text-sm">
-            Son 7 günün kalori ve makro besin alımı
-          </CardDescription>
+  const COLORS = ['#10b981', '#3b82f6', '#f59e0b'];
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg md:text-xl">Haftalık Kalori Takibi</CardTitle>
+          <CardDescription>Son 7 günün kalori alımı</CardDescription>
         </CardHeader>
-        <CardContent className="p-3 md:p-6">
-          <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
-            <BarChart data={nutritionData} margin={{ top: 20, right: 10, left: 0, bottom: 5 }}>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="day" 
-                fontSize={12}
-                tickMargin={8}
-              />
-              <YAxis 
-                fontSize={12}
-                tickMargin={8}
-              />
+              <XAxis dataKey="day" />
+              <YAxis />
               <Tooltip 
-                formatter={(value, name) => [
-                  value, 
-                  name === 'kalori' ? 'Kalori' : 
-                  name === 'protein' ? 'Protein (g)' : 'Karbonhidrat (g)'
-                ]}
-                contentStyle={{
-                  fontSize: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #e5e7eb'
-                }}
+                formatter={(value, name) => [value, name === 'calories' ? 'Kalori' : name]}
+                labelFormatter={(label) => `Gün: ${label}`}
               />
-              <Bar dataKey="kalori" fill="#3b82f6" name="kalori" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="protein" fill="#10b981" name="protein" radius={[2, 2, 0, 0]} />
-              <Bar dataKey="karbonhidrat" fill="#f59e0b" name="karbonhidrat" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="calories" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
-    );
-  }
 
-  return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg md:text-xl">Danışan Gelişimi</CardTitle>
-        <CardDescription className="text-sm">
-          Son 6 aylık danışan sayısı ve büyüme trendi
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-3 md:p-6">
-        <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
-          <LineChart data={clientProgressData} margin={{ top: 20, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="month" 
-              fontSize={12}
-              tickMargin={8}
-            />
-            <YAxis 
-              fontSize={12}
-              tickMargin={8}
-            />
-            <Tooltip 
-              formatter={(value, name) => [
-                value, 
-                name === 'newClients' ? 'Yeni Danışan' : 'Toplam Danışan'
-              ]}
-              contentStyle={{
-                fontSize: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e5e7eb'
-              }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="totalClients" 
-              stroke="#3b82f6" 
-              strokeWidth={3}
-              name="totalClients"
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="newClients" 
-              stroke="#10b981" 
-              strokeWidth={3}
-              name="newClients"
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg md:text-xl">Bugünkü Makro Dağılımı</CardTitle>
+          <CardDescription>Protein, karbonhidrat ve yağ alımınız</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col lg:flex-row items-center justify-between">
+            <div className="w-full lg:w-48 h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={macroData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {macroData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value}g`]} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex-1 mt-4 lg:mt-0 lg:ml-6">
+              <div className="space-y-3">
+                {macroData.map((macro, index) => (
+                  <div key={macro.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[index] }}
+                      ></div>
+                      <span className="text-sm font-medium">{macro.name}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {macro.value}g / {macro.target}g
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

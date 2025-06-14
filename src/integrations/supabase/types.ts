@@ -9,6 +9,234 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activities: {
+        Row: {
+          calories_burned: number | null
+          created_at: string | null
+          date: string
+          duration_minutes: number
+          id: string
+          name: string
+          notes: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string | null
+          date?: string
+          duration_minutes: number
+          id?: string
+          name: string
+          notes?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string | null
+          date?: string
+          duration_minutes?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          notes: string | null
+          professional_id: string
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          professional_id: string
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          professional_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          professional_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          professional_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      foods: {
+        Row: {
+          calories_per_100g: number
+          carbs_per_100g: number
+          created_at: string | null
+          fat_per_100g: number
+          fiber_per_100g: number
+          id: string
+          name: string
+          protein_per_100g: number
+        }
+        Insert: {
+          calories_per_100g: number
+          carbs_per_100g?: number
+          created_at?: string | null
+          fat_per_100g?: number
+          fiber_per_100g?: number
+          id?: string
+          name: string
+          protein_per_100g?: number
+        }
+        Update: {
+          calories_per_100g?: number
+          carbs_per_100g?: number
+          created_at?: string | null
+          fat_per_100g?: number
+          fiber_per_100g?: number
+          id?: string
+          name?: string
+          protein_per_100g?: number
+        }
+        Relationships: []
+      }
+      meal_foods: {
+        Row: {
+          calories: number
+          carbs: number
+          created_at: string | null
+          fat: number
+          food_id: string
+          id: string
+          meal_id: string
+          protein: number
+          quantity_grams: number
+        }
+        Insert: {
+          calories: number
+          carbs: number
+          created_at?: string | null
+          fat: number
+          food_id: string
+          id?: string
+          meal_id: string
+          protein: number
+          quantity_grams: number
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          created_at?: string | null
+          fat?: number
+          food_id?: string
+          id?: string
+          meal_id?: string
+          protein?: number
+          quantity_grams?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_foods_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_foods_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meals: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          meal_type: string
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_protein: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          meal_type: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          meal_type?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       professional_profiles: {
         Row: {
           approval_date: string | null
@@ -95,6 +323,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_goals: {
+        Row: {
+          created_at: string | null
+          daily_calories: number
+          daily_carbs: number
+          daily_fat: number
+          daily_protein: number
+          id: string
+          updated_at: string | null
+          user_id: string
+          weekly_exercise_minutes: number
+          weight_goal_kg: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_calories?: number
+          daily_carbs?: number
+          daily_fat?: number
+          daily_protein?: number
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          weekly_exercise_minutes?: number
+          weight_goal_kg?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_calories?: number
+          daily_carbs?: number
+          daily_fat?: number
+          daily_protein?: number
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          weekly_exercise_minutes?: number
+          weight_goal_kg?: number | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           activity_level: string | null
@@ -144,6 +411,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      water_intake: {
+        Row: {
+          amount_ml: number
+          date: string
+          id: string
+          time_logged: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_ml: number
+          date?: string
+          id?: string
+          time_logged?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          date?: string
+          id?: string
+          time_logged?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

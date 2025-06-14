@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      console.log('Profil verisi:', data); // Debug için
       setProfile(data);
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state değişti:', event, session?.user?.id); // Debug için
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -87,14 +88,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, userData: any) => {
+    console.log('SignUp çağrıldı, userData:', userData); // Debug için
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: userData
+        data: userData // Burada rol bilgisi de dahil olmak üzere tüm veri gönderiliyor
       }
     });
+    
+    if (error) {
+      console.error('SignUp hatası:', error); // Debug için
+    }
+    
     return { error };
   };
 

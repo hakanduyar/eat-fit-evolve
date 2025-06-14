@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,10 +42,11 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     try {
+      // rol bilgisini doğru şekilde gönderiyoruz
       const userData = {
         full_name: data.fullName,
         phone: data.phone,
-        role: data.role,
+        role: data.role, // Bu çok önemli - rol bilgisi burada
         ...(data.birthDate && { birth_date: data.birthDate }),
         ...(data.gender && { gender: data.gender }),
         ...(data.height && { height: parseInt(data.height) }),
@@ -61,9 +61,12 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
         ...(data.consultationFee && { consultation_fee: parseFloat(data.consultationFee) })
       };
 
+      console.log('Kayıt verisi gönderiliyor:', userData); // Debug için
+
       const { error } = await signUp(data.email, data.password, userData);
       
       if (error) {
+        console.error('Kayıt hatası:', error); // Debug için
         toast({
           title: 'Kayıt Hatası',
           description: error.message === 'User already registered' 
@@ -78,6 +81,7 @@ export function RegisterForm({ onLoginClick }: RegisterFormProps) {
         });
       }
     } catch (error) {
+      console.error('Beklenmeyen hata:', error); // Debug için
       toast({
         title: 'Bir hata oluştu',
         description: 'Lütfen tekrar deneyin',

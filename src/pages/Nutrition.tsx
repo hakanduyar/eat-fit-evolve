@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,16 +14,16 @@ const Nutrition = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   
   const { meals, loading, getTotalNutrition } = useMeals(selectedDate);
-  const { userGoals } = useUserGoals();
+  const { goals } = useUserGoals();
 
   const totalNutrition = getTotalNutrition();
   
   // Default targets if no user goals set
   const targets = {
-    calories: userGoals?.daily_calories || 2200,
-    protein: userGoals?.daily_protein || 120,
-    carbs: userGoals?.daily_carbs || 275,
-    fat: userGoals?.daily_fat || 65
+    calories: goals?.daily_calories || 2200,
+    protein: goals?.daily_protein || 120,
+    carbs: goals?.daily_carbs || 275,
+    fat: goals?.daily_fat || 65
   };
 
   // Group meals by type

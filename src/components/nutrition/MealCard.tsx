@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 
-type Meal = Database['public']['Tables']['meals']['Row'];
+type MealEntry = Database['public']['Tables']['meal_entries']['Row'];
 
 interface MealCardProps {
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  meal?: Meal;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  mealEntries?: MealEntry[];
   onEdit?: () => void;
   onDelete?: () => void;
   onAdd?: () => void;
@@ -18,40 +18,56 @@ const mealTypeNames = {
   breakfast: 'Kahvaltı',
   lunch: 'Öğle Yemeği', 
   dinner: 'Akşam Yemeği',
-  snack: 'Atıştırma'
+  snacks: 'Atıştırma'
 };
 
-export function MealCard({ mealType, meal, onEdit, onDelete, onAdd }: MealCardProps) {
+export function MealCard({ mealType, mealEntries = [], onEdit, onDelete, onAdd }: MealCardProps) {
+  const totalCalories = mealEntries.reduce((sum, entry) => sum + Number(entry.calories || 0), 0);
+  const totalProtein = mealEntries.reduce((sum, entry) => sum + Number(entry.protein || 0), 0);
+  const totalCarbs = mealEntries.reduce((sum, entry) => sum + Number(entry.carbs || 0), 0);
+  const totalFat = mealEntries.reduce((sum, entry) => sum + Number(entry.fat || 0), 0);
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
           {mealTypeNames[mealType]}
-          {meal ? (
+          {mealEntries.length > 0 && (
             <span className="text-sm font-normal text-gray-600">
-              {meal.total_calories || 0} kcal
+              {totalCalories} kcal
             </span>
-          ) : null}
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {meal ? (
+        {mealEntries.length > 0 ? (
           <div className="space-y-3">
+            <div className="space-y-2">
+              {mealEntries.map((entry) => (
+                <div key={entry.id} className="text-sm border-b pb-2 last:border-b-0">
+                  <div className="font-medium">Besin #{entry.food_id.slice(-4)}</div>
+                  <div className="text-gray-600">
+                    {entry.amount}g • {Number(entry.calories || 0)} kcal
+                  </div>
+                </div>
+              ))}
+            </div>
+            
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
                 <span className="text-gray-500">Protein:</span>
                 <br />
-                <span className="font-medium">{meal.total_protein?.toFixed(1) || 0}g</span>
+                <span className="font-medium">{totalProtein.toFixed(1)}g</span>
               </div>
               <div>
                 <span className="text-gray-500">Karb:</span>
                 <br />
-                <span className="font-medium">{meal.total_carbs?.toFixed(1) || 0}g</span>
+                <span className="font-medium">{totalCarbs.toFixed(1)}g</span>
               </div>
               <div>
                 <span className="text-gray-500">Yağ:</span>
                 <br />
-                <span className="font-medium">{meal.total_fat?.toFixed(1) || 0}g</span>
+                <span className="font-medium">{totalFat.toFixed(1)}g</span>
               </div>
             </div>
             

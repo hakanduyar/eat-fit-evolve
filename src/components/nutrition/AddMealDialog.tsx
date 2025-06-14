@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search } from "lucide-react";
-import { useMeals } from "@/hooks/useMeals";
+import { useFoods } from "@/hooks/useFoods";
+import { useMealEntries } from "@/hooks/useMealEntries";
 import { Database } from "@/integrations/supabase/types";
 
-type MealType = Database['public']['Tables']['meals']['Row']['meal_type'];
+type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+type Food = Database['public']['Tables']['foods']['Row'];
 
 interface AddMealDialogProps {
   selectedDate?: string;
@@ -19,24 +21,28 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
   const [open, setOpen] = useState(false);
   const [mealType, setMealType] = useState<MealType>('breakfast');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [amount, setAmount] = useState(100);
-  const { createMeal } = useMeals(selectedDate);
+  const { foods, searchFoods, loading: foodsLoading } = useFoods();
+  const { addMealEntry } = useMealEntries(selectedDate);
+  const [adding, setAdding] = useState(false);
 
-  const handleCreateMeal = async () => {
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    if (term.length >= 2) {
+      searchFoods(term);
+    }
+  };
+
+  const handleAddMeal = async () => {
     if (!selectedFood) return;
 
-    const calories = Math.round((selectedFood.calories_per_100g * amount) / 100);
-    const protein = Number(((selectedFood.protein_per_100g * amount) / 100).toFixed(2));
-    const carbs = Number(((selectedFood.carbs_per_100g * amount) / 100).toFixed(2));
-    const fat = Number(((selectedFood.fat_per_100g * amount) / 100).toFixed(2));
-
-    const result = await createMeal({
+    setAdding(true);
+    const result = await addMealEntry({
+      food_id: selectedFood.id,
       meal_type: mealType,
-      total_calories: calories,
-      total_protein: protein,
-      total_carbs: carbs,
-      total_fat: fat
+      amount: amount,
+      unit: 'g'
     });
 
     if (!result.error) {
@@ -45,19 +51,18 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
       setAmount(100);
       setSearchTerm('');
     }
+    setAdding(false);
   };
 
-  const mockFoods = [
-    { id: '1', name: 'Tavuk Göğsü', calories_per_100g: 165, protein_per_100g: 31, carbs_per_100g: 0, fat_per_100g: 3.6 },
-    { id: '2', name: 'Yumurta', calories_per_100g: 155, protein_per_100g: 13, carbs_per_100g: 1.1, fat_per_100g: 11 },
-    { id: '3', name: 'Pirinç', calories_per_100g: 130, protein_per_100g: 2.7, carbs_per_100g: 28, fat_per_100g: 0.3 },
-    { id: '4', name: 'Muz', calories_per_100g: 89, protein_per_100g: 1.1, carbs_per_100g: 23, fat_per_100g: 0.3 },
-    { id: '5', name: 'Elma', calories_per_100g: 52, protein_per_100g: 0.3, carbs_per_100g: 14, fat_per_100g: 0.2 }
-  ];
-
-  const filteredFoods = mockFoods.filter(food => 
-    food.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const calculateNutrition = (food: Food, grams: number) => {
+    const multiplier = grams / 100;
+    return {
+      calories: Math.round(Number(food.calories_per_100g) * multiplier),
+      protein: Number((Number(food.protein_per_100g) * multiplier).toFixed(1)),
+      carbs: Number((Number(food.carbs_per_100g) * multiplier).toFixed(1)),
+      fat: Number((Number(food.fat_per_100g) * multiplier).toFixed(1))
+    };
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,7 +91,7 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
                 <SelectItem value="breakfast">Kahvaltı</SelectItem>
                 <SelectItem value="lunch">Öğle Yemeği</SelectItem>
                 <SelectItem value="dinner">Akşam Yemeği</SelectItem>
-                <SelectItem value="snack">Atıştırma</SelectItem>
+                <SelectItem value="snacks">Atıştırma</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -99,7 +104,7 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
                 id="food-search"
                 placeholder="Besin adı yazın..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -107,20 +112,26 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
 
           {searchTerm && (
             <div className="max-h-40 overflow-y-auto border rounded-md">
-              {filteredFoods.map((food) => (
-                <div
-                  key={food.id}
-                  className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                    selectedFood?.id === food.id ? 'bg-blue-50' : ''
-                  }`}
-                  onClick={() => setSelectedFood(food)}
-                >
-                  <div className="font-medium">{food.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {food.calories_per_100g} kcal / 100g
+              {foodsLoading ? (
+                <div className="p-3 text-center text-sm text-gray-500">Aranıyor...</div>
+              ) : foods.length === 0 ? (
+                <div className="p-3 text-center text-sm text-gray-500">Besin bulunamadı</div>
+              ) : (
+                foods.map((food) => (
+                  <div
+                    key={food.id}
+                    className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
+                      selectedFood?.id === food.id ? 'bg-blue-50' : ''
+                    }`}
+                    onClick={() => setSelectedFood(food)}
+                  >
+                    <div className="font-medium">{food.name}</div>
+                    <div className="text-sm text-gray-500">
+                      {food.calories_per_100g} kcal / 100g
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
@@ -140,20 +151,20 @@ export function AddMealDialog({ selectedDate }: AddMealDialogProps) {
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>Kalori: {Math.round((selectedFood.calories_per_100g * amount) / 100)}</div>
-                <div>Protein: {((selectedFood.protein_per_100g * amount) / 100).toFixed(1)}g</div>
-                <div>Karbonhidrat: {((selectedFood.carbs_per_100g * amount) / 100).toFixed(1)}g</div>
-                <div>Yağ: {((selectedFood.fat_per_100g * amount) / 100).toFixed(1)}g</div>
+                <div>Kalori: {calculateNutrition(selectedFood, amount).calories}</div>
+                <div>Protein: {calculateNutrition(selectedFood, amount).protein}g</div>
+                <div>Karbonhidrat: {calculateNutrition(selectedFood, amount).carbs}g</div>
+                <div>Yağ: {calculateNutrition(selectedFood, amount).fat}g</div>
               </div>
             </div>
           )}
 
           <Button 
-            onClick={handleCreateMeal} 
-            disabled={!selectedFood}
+            onClick={handleAddMeal} 
+            disabled={!selectedFood || adding}
             className="w-full"
           >
-            Ekle
+            {adding ? 'Ekleniyor...' : 'Ekle'}
           </Button>
         </div>
       </DialogContent>

@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMeals } from "@/hooks/useMeals";
+import { useMealEntries } from "@/hooks/useMealEntries";
 import { useUserGoals } from "@/hooks/useUserGoals";
 import { DateNavigator } from "@/components/nutrition/DateNavigator";
 import { AddMealDialog } from "@/components/nutrition/AddMealDialog";
@@ -13,10 +14,11 @@ const Nutrition = () => {
   const { profile } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   
-  const { meals, loading, getTotalNutrition } = useMeals(selectedDate);
+  const { mealEntries, loading, getTotalNutrition, getMealsByType } = useMealEntries(selectedDate);
   const { goals } = useUserGoals();
 
   const totalNutrition = getTotalNutrition();
+  const mealsByType = getMealsByType();
   
   // Default targets if no user goals set
   const targets = {
@@ -24,14 +26,6 @@ const Nutrition = () => {
     protein: goals?.daily_protein || 120,
     carbs: goals?.daily_carbs || 275,
     fat: goals?.daily_fat || 65
-  };
-
-  // Group meals by type
-  const mealsByType = {
-    breakfast: meals.find(m => m.meal_type === 'breakfast'),
-    lunch: meals.find(m => m.meal_type === 'lunch'),
-    dinner: meals.find(m => m.meal_type === 'dinner'),
-    snack: meals.find(m => m.meal_type === 'snack')
   };
 
   if (loading) {
@@ -72,28 +66,28 @@ const Nutrition = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <MealCard
                   mealType="breakfast"
-                  meal={mealsByType.breakfast}
+                  mealEntries={mealsByType.breakfast}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
                   mealType="lunch"
-                  meal={mealsByType.lunch}
+                  mealEntries={mealsByType.lunch}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
                   mealType="dinner"
-                  meal={mealsByType.dinner}
+                  mealEntries={mealsByType.dinner}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
-                  mealType="snack"
-                  meal={mealsByType.snack}
+                  mealType="snacks"
+                  mealEntries={mealsByType.snacks}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}

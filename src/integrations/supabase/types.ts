@@ -9,7 +9,130 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      professional_profiles: {
+        Row: {
+          approval_date: string | null
+          created_at: string
+          diploma_info: string | null
+          experience_years: number | null
+          id: string
+          is_approved: boolean
+          profile_id: string
+          specializations: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          approval_date?: string | null
+          created_at?: string
+          diploma_info?: string | null
+          experience_years?: number | null
+          id?: string
+          is_approved?: boolean
+          profile_id: string
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          approval_date?: string | null
+          created_at?: string
+          diploma_info?: string | null
+          experience_years?: number | null
+          id?: string
+          is_approved?: boolean
+          profile_id?: string
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          birth_date: string | null
+          created_at: string
+          gender: Database["public"]["Enums"]["gender"] | null
+          goal: Database["public"]["Enums"]["goal"] | null
+          height: number | null
+          id: string
+          profile_id: string
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          birth_date?: string | null
+          created_at?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
+          goal?: Database["public"]["Enums"]["goal"] | null
+          height?: number | null
+          id?: string
+          profile_id: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          birth_date?: string | null
+          created_at?: string
+          gender?: Database["public"]["Enums"]["gender"] | null
+          goal?: Database["public"]["Enums"]["goal"] | null
+          height?: number | null
+          id?: string
+          profile_id?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +141,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      gender: "male" | "female" | "other"
+      goal: "lose_weight" | "gain_weight" | "maintain"
+      user_role: "user" | "dietitian" | "trainer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +258,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      gender: ["male", "female", "other"],
+      goal: ["lose_weight", "gain_weight", "maintain"],
+      user_role: ["user", "dietitian", "trainer"],
+    },
   },
 } as const

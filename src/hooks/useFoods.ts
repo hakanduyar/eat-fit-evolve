@@ -22,7 +22,6 @@ export function useFoods() {
       const { data, error: fetchError } = await supabase
         .from('foods')
         .select('*')
-        .eq('is_active', true)
         .order('name');
 
       if (fetchError) {
@@ -48,12 +47,7 @@ export function useFoods() {
       let queryBuilder = supabase
         .from('foods')
         .select('*')
-        .eq('is_active', true)
         .ilike('name', `%${query}%`);
-
-      if (category) {
-        queryBuilder = queryBuilder.eq('category', category);
-      }
 
       const { data, error: searchError } = await queryBuilder
         .order('name')

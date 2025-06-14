@@ -2,10 +2,24 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
 
-type DailyNutrition = Database['public']['Tables']['daily_nutrition']['Row'];
-type DailyNutritionInsert = Database['public']['Tables']['daily_nutrition']['Insert'];
+// Define types based on the new schema structure
+type DailyNutrition = {
+  id: string;
+  user_id: string;
+  date: string;
+  water_intake: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type DailyNutritionInsert = {
+  user_id?: string;
+  date?: string;
+  water_intake?: number;
+  notes?: string;
+};
 
 export function useDailyNutrition(date?: string) {
   const { user } = useAuth();
@@ -30,20 +44,19 @@ export function useDailyNutrition(date?: string) {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('daily_nutrition')
-        .select('*')
-        .eq('user_id', user!.id)
-        .eq('date', targetDate)
-        .maybeSingle();
+      // Use raw SQL for now since the types haven't been updated
+      const { data, error: fetchError } = await supabase.rpc('get_daily_nutrition', {
+        p_user_id: user!.id,
+        p_date: targetDate
+      });
 
-      if (fetchError) {
+      if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching daily nutrition:', fetchError);
         setError('Günlük beslenme verisi alınamadı');
         return;
       }
 
-      setDailyNutrition(data);
+      setDailyNutrition(data?.[0] || null);
     } catch (err) {
       console.error('Unexpected error fetching daily nutrition:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -56,22 +69,20 @@ export function useDailyNutrition(date?: string) {
     if (!user) return { error: 'Kullanıcı oturumu bulunamadı' };
 
     try {
-      const { data: result, error: upsertError } = await supabase
-        .from('daily_nutrition')
-        .upsert({
-          user_id: user.id,
-          date: targetDate,
-          ...data
-        })
-        .select()
-        .single();
+      // Use raw SQL for now
+      const { data: result, error: upsertError } = await supabase.rpc('upsert_daily_nutrition', {
+        p_user_id: user.id,
+        p_date: targetDate,
+        p_water_intake: data.water_intake || 0,
+        p_notes: data.notes || null
+      });
 
       if (upsertError) {
         console.error('Error upserting daily nutrition:', upsertError);
         return { error: 'Günlük beslenme verisi kaydedilemedi' };
       }
 
-      setDailyNutrition(result);
+      await fetchDailyNutrition(); // Refresh data
       return { data: result, error: null };
     } catch (err) {
       console.error('Unexpected error upserting daily nutrition:', err);

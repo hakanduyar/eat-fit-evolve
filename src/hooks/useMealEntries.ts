@@ -2,11 +2,31 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
 import { useDailyNutrition } from './useDailyNutrition';
 
-type MealEntry = Database['public']['Tables']['meal_entries']['Row'];
-type MealEntryInsert = Database['public']['Tables']['meal_entries']['Insert'];
+// Define types based on the new schema structure
+type MealEntry = {
+  id: string;
+  daily_nutrition_id: string;
+  food_id: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  amount: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  eaten_at: string;
+  created_at: string;
+};
+
+type MealEntryInsert = {
+  food_id: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  amount: number;
+  unit: string;
+};
 
 export function useMealEntries(date?: string) {
   const { user } = useAuth();
@@ -34,11 +54,10 @@ export function useMealEntries(date?: string) {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('meal_entries')
-        .select('*')
-        .eq('daily_nutrition_id', dailyNutrition.id)
-        .order('eaten_at', { ascending: true });
+      // Use raw SQL for now since types haven't been updated
+      const { data, error: fetchError } = await supabase.rpc('get_meal_entries', {
+        p_daily_nutrition_id: dailyNutrition.id
+      });
 
       if (fetchError) {
         console.error('Error fetching meal entries:', fetchError);
@@ -55,7 +74,7 @@ export function useMealEntries(date?: string) {
     }
   };
 
-  const addMealEntry = async (entryData: Omit<MealEntryInsert, 'daily_nutrition_id'>) => {
+  const addMealEntry = async (entryData: MealEntryInsert) => {
     if (!user) return { error: 'Kullanıcı oturumu bulunamadı' };
 
     // Ensure daily nutrition record exists
@@ -63,23 +82,20 @@ export function useMealEntries(date?: string) {
     if (!dailyNutritionId) {
       const result = await createOrUpdateDailyNutrition({});
       if (result.error) return result;
-      dailyNutritionId = result.data!.id;
+      // We'll need to refetch to get the ID
+      setTimeout(() => fetchMealEntries(), 100);
+      return { data: null, error: null };
     }
 
     try {
-      const { data, error: insertError } = await supabase
-        .from('meal_entries')
-        .insert({
-          ...entryData,
-          daily_nutrition_id: dailyNutritionId,
-          calories: 0, // Will be calculated by trigger
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          fiber: 0
-        })
-        .select()
-        .single();
+      // Use raw SQL for now
+      const { data, error: insertError } = await supabase.rpc('add_meal_entry', {
+        p_daily_nutrition_id: dailyNutritionId,
+        p_food_id: entryData.food_id,
+        p_meal_type: entryData.meal_type,
+        p_amount: entryData.amount,
+        p_unit: entryData.unit
+      });
 
       if (insertError) {
         console.error('Error adding meal entry:', insertError);

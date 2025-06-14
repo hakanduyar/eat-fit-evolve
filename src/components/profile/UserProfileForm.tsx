@@ -16,27 +16,32 @@ type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
 
 interface UserProfileFormProps {
   userProfile: UserProfile | null;
+  onCancel?: () => void;
+  initialData?: UserProfile | null;
 }
 
-export function UserProfileForm({ userProfile }: UserProfileFormProps) {
+export function UserProfileForm({ userProfile, onCancel, initialData }: UserProfileFormProps) {
   const { createUserProfile, updateUserProfile } = useProfileManager();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  // Use initialData if provided, otherwise use userProfile
+  const profileData = initialData || userProfile;
+
   const [formData, setFormData] = useState({
-    birth_date: userProfile?.birth_date || '',
-    gender: (userProfile?.gender as Gender) || '',
-    height: userProfile?.height?.toString() || '',
-    weight: userProfile?.weight?.toString() || '',
-    target_weight: userProfile?.target_weight?.toString() || '',
-    activity_level: (userProfile?.activity_level as ActivityLevel) || 'moderate',
-    goal: (userProfile?.goal as Goal) || ''
+    birth_date: profileData?.birth_date || '',
+    gender: (profileData?.gender as Gender) || '',
+    height: profileData?.height?.toString() || '',
+    weight: profileData?.weight?.toString() || '',
+    target_weight: profileData?.target_weight?.toString() || '',
+    activity_level: (profileData?.activity_level as ActivityLevel) || 'moderate',
+    goal: (profileData?.goal as Goal) || ''
   });
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const profileData = {
+      const profileDataToSave = {
         birth_date: formData.birth_date || null,
         gender: formData.gender as Gender || null,
         height: formData.height ? parseInt(formData.height) : null,
@@ -47,10 +52,10 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
       };
 
       let result;
-      if (userProfile) {
-        result = await updateUserProfile(profileData);
+      if (profileData) {
+        result = await updateUserProfile(profileDataToSave);
       } else {
-        result = await createUserProfile(profileData);
+        result = await createUserProfile(profileDataToSave);
       }
 
       if (result.error) {
@@ -64,6 +69,9 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
           title: "Başarılı",
           description: "Profil bilgileri güncellendi"
         });
+        if (onCancel) {
+          onCancel();
+        }
       }
     } finally {
       setSaving(false);
@@ -165,9 +173,16 @@ export function UserProfileForm({ userProfile }: UserProfileFormProps) {
             </Select>
           </FormField>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Kaydediliyor...' : 'Kaydet'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
+          </Button>
+          {onCancel && (
+            <Button variant="outline" onClick={onCancel}>
+              İptal
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

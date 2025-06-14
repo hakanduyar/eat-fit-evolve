@@ -4,7 +4,11 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { UserProfileForm } from './UserProfileForm';
 import { ProfessionalProfileForm } from './ProfessionalProfileForm';
 
-export function ProfileEditForm() {
+interface ProfileEditFormProps {
+  onCancel?: () => void;
+}
+
+export function ProfileEditForm({ onCancel }: ProfileEditFormProps) {
   const { profile } = useAuth();
   const { userProfile, professionalProfile, loading } = useUserProfile();
 

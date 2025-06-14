@@ -13,25 +13,30 @@ type ProfessionalProfile = Database['public']['Tables']['professional_profiles']
 
 interface ProfessionalProfileFormProps {
   professionalProfile: ProfessionalProfile | null;
+  onCancel?: () => void;
+  initialData?: ProfessionalProfile | null;
 }
 
-export function ProfessionalProfileForm({ professionalProfile }: ProfessionalProfileFormProps) {
+export function ProfessionalProfileForm({ professionalProfile, onCancel, initialData }: ProfessionalProfileFormProps) {
   const { createProfessionalProfile, updateProfessionalProfile } = useProfileManager();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  // Use initialData if provided, otherwise use professionalProfile
+  const profileData = initialData || professionalProfile;
+
   const [formData, setFormData] = useState({
-    license_number: professionalProfile?.license_number || '',
-    experience_years: professionalProfile?.experience_years?.toString() || '',
-    consultation_fee: professionalProfile?.consultation_fee?.toString() || '',
-    diploma_info: professionalProfile?.diploma_info || '',
-    specializations: professionalProfile?.specializations?.join(', ') || ''
+    license_number: profileData?.license_number || '',
+    experience_years: profileData?.experience_years?.toString() || '',
+    consultation_fee: profileData?.consultation_fee?.toString() || '',
+    diploma_info: profileData?.diploma_info || '',
+    specializations: profileData?.specializations?.join(', ') || ''
   });
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const profileData = {
+      const profileDataToSave = {
         license_number: formData.license_number || null,
         experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
         consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : null,
@@ -40,10 +45,10 @@ export function ProfessionalProfileForm({ professionalProfile }: ProfessionalPro
       };
 
       let result;
-      if (professionalProfile) {
-        result = await updateProfessionalProfile(profileData);
+      if (profileData) {
+        result = await updateProfessionalProfile(profileDataToSave);
       } else {
-        result = await createProfessionalProfile(profileData);
+        result = await createProfessionalProfile(profileDataToSave);
       }
 
       if (result.error) {
@@ -57,6 +62,9 @@ export function ProfessionalProfileForm({ professionalProfile }: ProfessionalPro
           title: "Başarılı",
           description: "Profesyonel profil güncellendi"
         });
+        if (onCancel) {
+          onCancel();
+        }
       }
     } finally {
       setSaving(false);
@@ -116,9 +124,16 @@ export function ProfessionalProfileForm({ professionalProfile }: ProfessionalPro
           />
         </FormField>
 
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Kaydediliyor...' : 'Kaydet'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
+          </Button>
+          {onCancel && (
+            <Button variant="outline" onClick={onCancel}>
+              İptal
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

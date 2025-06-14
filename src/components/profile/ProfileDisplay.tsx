@@ -127,7 +127,7 @@ export function ProfileDisplay() {
           <CardContent>
             {editingSection === 'user' ? (
               <UserProfileForm 
-                initialData={userProfile}
+                userProfile={userProfile}
                 onCancel={() => setEditingSection(null)}
               />
             ) : (
@@ -194,7 +194,7 @@ export function ProfileDisplay() {
           <CardContent>
             {editingSection === 'professional' ? (
               <ProfessionalProfileForm 
-                initialData={professionalProfile}
+                professionalProfile={professionalProfile}
                 onCancel={() => setEditingSection(null)}
               />
             ) : (

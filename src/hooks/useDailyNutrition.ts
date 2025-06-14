@@ -40,15 +40,19 @@ export function useDailyNutrition(date?: string) {
   }, [user, targetDate]);
 
   const fetchDailyNutrition = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
       setError(null);
 
-      // Use raw SQL for now since the types haven't been updated
-      const { data, error: fetchError } = await supabase.rpc('get_daily_nutrition', {
-        p_user_id: user!.id,
-        p_date: targetDate
-      });
+      // Direct query since RPC functions aren't available yet
+      const { data, error: fetchError } = await supabase
+        .from('daily_nutrition' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', targetDate)
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching daily nutrition:', fetchError);
@@ -56,7 +60,7 @@ export function useDailyNutrition(date?: string) {
         return;
       }
 
-      setDailyNutrition(data?.[0] || null);
+      setDailyNutrition(data || null);
     } catch (err) {
       console.error('Unexpected error fetching daily nutrition:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -69,13 +73,19 @@ export function useDailyNutrition(date?: string) {
     if (!user) return { error: 'Kullanıcı oturumu bulunamadı' };
 
     try {
-      // Use raw SQL for now
-      const { data: result, error: upsertError } = await supabase.rpc('upsert_daily_nutrition', {
-        p_user_id: user.id,
-        p_date: targetDate,
-        p_water_intake: data.water_intake || 0,
-        p_notes: data.notes || null
-      });
+      // Try to upsert the daily nutrition record
+      const upsertData = {
+        user_id: user.id,
+        date: targetDate,
+        water_intake: data.water_intake || 0,
+        notes: data.notes || null
+      };
+
+      const { data: result, error: upsertError } = await supabase
+        .from('daily_nutrition' as any)
+        .upsert(upsertData, { onConflict: 'user_id,date' })
+        .select()
+        .single();
 
       if (upsertError) {
         console.error('Error upserting daily nutrition:', upsertError);

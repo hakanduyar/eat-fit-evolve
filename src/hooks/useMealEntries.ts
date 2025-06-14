@@ -54,10 +54,11 @@ export function useMealEntries(date?: string) {
       setLoading(true);
       setError(null);
 
-      // Use raw SQL for now since types haven't been updated
-      const { data, error: fetchError } = await supabase.rpc('get_meal_entries', {
-        p_daily_nutrition_id: dailyNutrition.id
-      });
+      // Direct query since RPC functions aren't available yet
+      const { data, error: fetchError } = await supabase
+        .from('meal_entries' as any)
+        .select('*')
+        .eq('daily_nutrition_id', dailyNutrition.id);
 
       if (fetchError) {
         console.error('Error fetching meal entries:', fetchError);
@@ -88,14 +89,38 @@ export function useMealEntries(date?: string) {
     }
 
     try {
-      // Use raw SQL for now
-      const { data, error: insertError } = await supabase.rpc('add_meal_entry', {
-        p_daily_nutrition_id: dailyNutritionId,
-        p_food_id: entryData.food_id,
-        p_meal_type: entryData.meal_type,
-        p_amount: entryData.amount,
-        p_unit: entryData.unit
-      });
+      // Get food nutrition data first to calculate values
+      const { data: foodData, error: foodError } = await supabase
+        .from('foods')
+        .select('*')
+        .eq('id', entryData.food_id)
+        .single();
+
+      if (foodError || !foodData) {
+        console.error('Error fetching food data:', foodError);
+        return { error: 'Besin verisi bulunamadı' };
+      }
+
+      // Calculate nutrition values
+      const multiplier = entryData.amount / 100;
+      const calculatedEntry = {
+        daily_nutrition_id: dailyNutritionId,
+        food_id: entryData.food_id,
+        meal_type: entryData.meal_type,
+        amount: entryData.amount,
+        unit: entryData.unit,
+        calories: Math.round(Number(foodData.calories_per_100g) * multiplier),
+        protein: Number((Number(foodData.protein_per_100g) * multiplier).toFixed(2)),
+        carbs: Number((Number(foodData.carbs_per_100g) * multiplier).toFixed(2)),
+        fat: Number((Number(foodData.fat_per_100g) * multiplier).toFixed(2)),
+        fiber: Number((Number(foodData.fiber_per_100g) * multiplier).toFixed(2))
+      };
+
+      const { data, error: insertError } = await supabase
+        .from('meal_entries' as any)
+        .insert(calculatedEntry)
+        .select()
+        .single();
 
       if (insertError) {
         console.error('Error adding meal entry:', insertError);

@@ -87,6 +87,105 @@ export type Database = {
         }
         Relationships: []
       }
+      client_connections: {
+        Row: {
+          client_id: string | null
+          connection_type: string | null
+          created_at: string | null
+          dietitian_id: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          connection_type?: string | null
+          created_at?: string | null
+          dietitian_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          connection_type?: string | null
+          created_at?: string | null
+          dietitian_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_connections_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_connections_dietitian_id_fkey"
+            columns: ["dietitian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_notes: {
+        Row: {
+          client_id: string | null
+          content: string
+          created_at: string | null
+          date: string | null
+          dietitian_id: string | null
+          id: string
+          note_type: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          content: string
+          created_at?: string | null
+          date?: string | null
+          dietitian_id?: string | null
+          id?: string
+          note_type?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          content?: string
+          created_at?: string | null
+          date?: string | null
+          dietitian_id?: string | null
+          id?: string
+          note_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_notes_dietitian_id_fkey"
+            columns: ["dietitian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           client_id: string
@@ -113,6 +212,103 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      daily_nutrition: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          id: string
+          notes: string | null
+          updated_at: string | null
+          user_id: string | null
+          water_intake: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          water_intake?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          water_intake?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_nutrition_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diet_programs: {
+        Row: {
+          carbs_percentage: number | null
+          created_at: string | null
+          daily_calorie_target: number | null
+          description: string | null
+          dietitian_id: string | null
+          duration_days: number | null
+          fat_percentage: number | null
+          id: string
+          is_template: boolean | null
+          name: string
+          notes: string | null
+          protein_percentage: number | null
+          restrictions: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          carbs_percentage?: number | null
+          created_at?: string | null
+          daily_calorie_target?: number | null
+          description?: string | null
+          dietitian_id?: string | null
+          duration_days?: number | null
+          fat_percentage?: number | null
+          id?: string
+          is_template?: boolean | null
+          name: string
+          notes?: string | null
+          protein_percentage?: number | null
+          restrictions?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          carbs_percentage?: number | null
+          created_at?: string | null
+          daily_calorie_target?: number | null
+          description?: string | null
+          dietitian_id?: string | null
+          duration_days?: number | null
+          fat_percentage?: number | null
+          id?: string
+          is_template?: boolean | null
+          name?: string
+          notes?: string | null
+          protein_percentage?: number | null
+          restrictions?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_programs_dietitian_id_fkey"
+            columns: ["dietitian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       foods: {
         Row: {
@@ -146,6 +342,69 @@ export type Database = {
           protein_per_100g?: number
         }
         Relationships: []
+      }
+      meal_entries: {
+        Row: {
+          amount: number
+          calories: number
+          carbs: number
+          created_at: string | null
+          daily_nutrition_id: string | null
+          eaten_at: string | null
+          fat: number
+          fiber: number
+          food_id: string | null
+          id: string
+          meal_type: string
+          protein: number
+          unit: string
+        }
+        Insert: {
+          amount: number
+          calories: number
+          carbs?: number
+          created_at?: string | null
+          daily_nutrition_id?: string | null
+          eaten_at?: string | null
+          fat?: number
+          fiber?: number
+          food_id?: string | null
+          id?: string
+          meal_type: string
+          protein?: number
+          unit?: string
+        }
+        Update: {
+          amount?: number
+          calories?: number
+          carbs?: number
+          created_at?: string | null
+          daily_nutrition_id?: string | null
+          eaten_at?: string | null
+          fat?: number
+          fiber?: number
+          food_id?: string | null
+          id?: string
+          meal_type?: string
+          protein?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_entries_daily_nutrition_id_fkey"
+            columns: ["daily_nutrition_id"]
+            isOneToOne: false
+            referencedRelation: "daily_nutrition"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_entries_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meal_foods: {
         Row: {
@@ -237,6 +496,90 @@ export type Database = {
         }
         Relationships: []
       }
+      message_threads: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          dietitian_id: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          dietitian_id?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          dietitian_id?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_dietitian_id_fkey"
+            columns: ["dietitian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          id: string
+          message_type: string | null
+          read_at: string | null
+          sender_id: string | null
+          sent_at: string | null
+          thread_id: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          message_type?: string | null
+          read_at?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          thread_id?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          message_type?: string | null
+          read_at?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_profiles: {
         Row: {
           approval_date: string | null
@@ -322,6 +665,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      program_assignments: {
+        Row: {
+          assigned_date: string | null
+          client_id: string | null
+          created_at: string | null
+          custom_calorie_target: number | null
+          dietitian_id: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          program_id: string | null
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          custom_calorie_target?: number | null
+          dietitian_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          program_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          custom_calorie_target?: number | null
+          dietitian_id?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          program_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_assignments_dietitian_id_fkey"
+            columns: ["dietitian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_assignments_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "diet_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_goals: {
         Row: {

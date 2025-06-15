@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MoreHorizontal, MessageCircle, User, Phone, Mail } from 'lucide-react';
+import { MoreHorizontal, MessageCircle, User, Phone, Mail, Eye } from 'lucide-react';
 import { ClientConnection } from '@/hooks/useClientConnections';
+import { useNavigate } from 'react-router-dom';
 
 interface ClientCardProps {
   connection: ClientConnection;
@@ -13,6 +14,8 @@ interface ClientCardProps {
 }
 
 export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
+  const navigate = useNavigate();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-500';
@@ -96,6 +99,14 @@ export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
           </div>
 
           <div className="flex items-center gap-1">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/clients/${connection.client_id}`)}
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+            
             <Button variant="outline" size="sm">
               <MessageCircle className="w-4 h-4" />
             </Button>

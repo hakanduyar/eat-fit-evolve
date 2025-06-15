@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Nutrition from "./pages/Nutrition";
 import Activity from "./pages/Activity";
 import Clients from "./pages/Clients";
+import ClientDetail from "./pages/ClientDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -42,6 +43,7 @@ const App: React.FC = () => (
               <Route path="/nutrition" element={<Nutrition />} />
               <Route path="/activity" element={<Activity />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/clients/:clientId" element={<ClientDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

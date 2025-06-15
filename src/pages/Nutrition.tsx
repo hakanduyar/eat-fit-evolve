@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,6 @@ const Nutrition = () => {
   const { goals } = useUserGoals();
 
   const totalNutrition = getTotalNutrition();
-  const mealsByType = getMealsByType();
   
   // Default targets if no user goals set
   const targets = {
@@ -66,28 +64,28 @@ const Nutrition = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <MealCard
                   mealType="breakfast"
-                  mealEntries={mealsByType.breakfast}
+                  mealEntries={getMealsByType("breakfast")}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
                   mealType="lunch"
-                  mealEntries={mealsByType.lunch}
+                  mealEntries={getMealsByType("lunch")}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
                   mealType="dinner"
-                  mealEntries={mealsByType.dinner}
+                  mealEntries={getMealsByType("dinner")}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}
                 />
                 <MealCard
                   mealType="snacks"
-                  mealEntries={mealsByType.snacks}
+                  mealEntries={getMealsByType("snacks")}
                   onAdd={() => {}}
                   onEdit={() => {}}
                   onDelete={() => {}}

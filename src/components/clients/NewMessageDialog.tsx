@@ -3,22 +3,21 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Send, User } from 'lucide-react';
-import { useClientMessages, NewClientConnection } from '@/hooks/useNewClientConnections';
+import { useClientMessages, ClientMessage } from '@/hooks/useClientMessages';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import type { ClientConnection } from '@/hooks/useClientConnections';
 
 interface NewMessageDialogProps {
-  connection: NewClientConnection;
+  connection: ClientConnection;
 }
 
 export function NewMessageDialog({ connection }: NewMessageDialogProps) {
   const [open, setOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [messageType, setMessageType] = useState<'text'>('text');
   const { profile } = useAuth();
   const { messages, loading, sendMessage } = useClientMessages(connection.id);
   const [sending, setSending] = useState(false);
@@ -44,7 +43,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
     if (!newMessage.trim()) return;
 
     setSending(true);
-    const { error } = await sendMessage(getRecipientId(), newMessage, messageType);
+    const { error } = await sendMessage(getRecipientId(), newMessage);
 
     if (error) {
       toast({
@@ -54,7 +53,6 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
       });
     } else {
       setNewMessage('');
-      setMessageType('text');
       toast({
         title: 'Başarılı',
         description: 'Mesaj gönderildi',
@@ -91,7 +89,6 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4 flex flex-col h-full">
-          {/* Messages Area */}
           <ScrollArea className="flex-1 h-96 w-full border rounded-lg p-4">
             {loading ? (
               <div className="text-center py-8">
@@ -116,7 +113,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
                          message.sender_profile?.role === 'trainer' ? 'Antrenör' : 'Danışan'}
                       </Badge>
                       <span className="ml-auto">{formatMessageTime(message.sent_at)}</span>
-                      {!message.read_at && (
+                      {!message.read_at && message.sender_id !== profile?.user_id && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       )}
                     </div>
@@ -125,7 +122,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
                         ? 'bg-primary text-primary-foreground ml-8' 
                         : 'bg-muted mr-8'
                     }`}>
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm">{message.message}</p>
                     </div>
                   </div>
                 ))}
@@ -133,7 +130,6 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
             )}
           </ScrollArea>
 
-          {/* Message Input */}
           <div className="space-y-3 border-t pt-4">
             <Textarea
               placeholder="Mesajınızı yazın..."

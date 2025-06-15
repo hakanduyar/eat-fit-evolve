@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Clock, User, MessageCircle, Calendar, Phone, Mail } from 'lucide-react';
-import { useNewClientConnections } from '@/hooks/useNewClientConnections';
+import { useClientConnections } from '@/hooks/useClientConnections';
 import { CreateConnectionDialog } from './CreateConnectionDialog';
 import { NewMessageDialog } from './NewMessageDialog';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function NewClientsTab() {
   const { profile } = useAuth();
-  const { connections, loading, error, updateConnectionStatus } = useNewClientConnections();
+  const { connections, loading, error, updateConnectionStatus } = useClientConnections();
 
   if (loading) {
     return (

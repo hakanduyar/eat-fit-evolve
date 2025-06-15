@@ -5,39 +5,32 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type ClientNote = {
   id: string;
-  dietitian_id: string;
   client_id: string;
-  note_type: 'general' | 'progress' | 'concern' | 'achievement';
+  dietitian_id: string;
+  note_type: 'general' | 'progress' | 'concern' | 'achievement' | 'reminder';
   content: string;
   date: string;
   created_at: string;
 };
 
-type ClientNoteInsert = {
-  client_id: string;
-  note_type: 'general' | 'progress' | 'concern' | 'achievement';
-  content: string;
-  date?: string;
-};
-
-export function useClientNotes(clientId?: string) {
+export function useClientNotes(connectionId?: string) {
   const { profile } = useAuth();
   const [notes, setNotes] = useState<ClientNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile || !clientId) {
+    if (!profile || !connectionId || profile.role === 'user') {
       setNotes([]);
       setLoading(false);
       return;
     }
 
     fetchNotes();
-  }, [profile, clientId]);
+  }, [profile, connectionId]);
 
   const fetchNotes = async () => {
-    if (!profile || !clientId) return;
+    if (!profile || !connectionId || profile.role === 'user') return;
 
     try {
       setLoading(true);
@@ -46,20 +39,18 @@ export function useClientNotes(clientId?: string) {
       const { data, error: fetchError } = await supabase
         .from('client_notes')
         .select('*')
-        .eq('client_id', clientId)
-        .eq('dietitian_id', profile.id)
+        .eq('dietitian_id', profile.user_id)
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.error('Error fetching client notes:', fetchError);
+        console.error('Error fetching notes:', fetchError);
         setError('Notlar alınamadı');
         return;
       }
 
-      // Type assertion to ensure the data matches our ClientNote type
       const typedNotes = (data || []).map(note => ({
         ...note,
-        note_type: note.note_type as 'general' | 'progress' | 'concern' | 'achievement'
+        note_type: note.note_type as 'general' | 'progress' | 'concern' | 'achievement' | 'reminder'
       }));
 
       setNotes(typedNotes);
@@ -71,33 +62,89 @@ export function useClientNotes(clientId?: string) {
     }
   };
 
-  const addNote = async (noteData: ClientNoteInsert) => {
+  const addNote = async (
+    clientId: string,
+    content: string,
+    noteType: ClientNote['note_type'] = 'general'
+  ) => {
     if (!profile || profile.role === 'user') {
       return { error: 'İzin yok' };
     }
 
     try {
-      const { data, error: insertError } = await supabase
+      const { data, error } = await supabase
         .from('client_notes')
         .insert({
-          dietitian_id: profile.id,
-          client_id: noteData.client_id,
-          note_type: noteData.note_type,
-          content: noteData.content,
-          date: noteData.date || new Date().toISOString().split('T')[0]
+          client_id: clientId,
+          dietitian_id: profile.user_id,
+          content: content.trim(),
+          note_type: noteType
         })
         .select()
         .single();
 
-      if (insertError) {
-        console.error('Error adding note:', insertError);
+      if (error) {
+        console.error('Error adding note:', error);
         return { error: 'Not eklenemedi' };
       }
 
-      await fetchNotes(); // Refresh list
-      return { data: data as ClientNote, error: null };
+      await fetchNotes();
+      return { data, error: null };
     } catch (err) {
       console.error('Unexpected error adding note:', err);
+      return { error: 'Beklenmeyen bir hata oluştu' };
+    }
+  };
+
+  const updateNote = async (
+    noteId: string,
+    updates: Partial<Pick<ClientNote, 'content' | 'note_type'>>
+  ) => {
+    if (!profile || profile.role === 'user') {
+      return { error: 'İzin yok' };
+    }
+
+    try {
+      const { error } = await supabase
+        .from('client_notes')
+        .update(updates)
+        .eq('id', noteId)
+        .eq('dietitian_id', profile.user_id);
+
+      if (error) {
+        console.error('Error updating note:', error);
+        return { error: 'Not güncellenemedi' };
+      }
+
+      await fetchNotes();
+      return { error: null };
+    } catch (err) {
+      console.error('Unexpected error updating note:', err);
+      return { error: 'Beklenmeyen bir hata oluştu' };
+    }
+  };
+
+  const deleteNote = async (noteId: string) => {
+    if (!profile || profile.role === 'user') {
+      return { error: 'İzin yok' };
+    }
+
+    try {
+      const { error } = await supabase
+        .from('client_notes')
+        .delete()
+        .eq('id', noteId)
+        .eq('dietitian_id', profile.user_id);
+
+      if (error) {
+        console.error('Error deleting note:', error);
+        return { error: 'Not silinemedi' };
+      }
+
+      await fetchNotes();
+      return { error: null };
+    } catch (err) {
+      console.error('Unexpected error deleting note:', err);
       return { error: 'Beklenmeyen bir hata oluştu' };
     }
   };
@@ -107,6 +154,8 @@ export function useClientNotes(clientId?: string) {
     loading,
     error,
     addNote,
+    updateNote,
+    deleteNote,
     refetch: fetchNotes
   };
 }

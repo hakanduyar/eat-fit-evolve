@@ -141,6 +141,64 @@ export type Database = {
           },
         ]
       }
+      client_messages: {
+        Row: {
+          connection_id: string | null
+          created_at: string | null
+          id: string
+          message: string
+          message_type: string | null
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          message_type?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          message_type?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "client_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "client_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       client_notes: {
         Row: {
           client_id: string | null

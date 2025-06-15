@@ -56,7 +56,13 @@ export function useClientNotes(clientId?: string) {
         return;
       }
 
-      setNotes(data || []);
+      // Type assertion to ensure the data matches our ClientNote type
+      const typedNotes = (data || []).map(note => ({
+        ...note,
+        note_type: note.note_type as 'general' | 'progress' | 'concern' | 'achievement'
+      }));
+
+      setNotes(typedNotes);
     } catch (err) {
       console.error('Unexpected error fetching notes:', err);
       setError('Beklenmeyen bir hata oluştu');

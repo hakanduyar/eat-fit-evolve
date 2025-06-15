@@ -44,13 +44,7 @@ export function useClientMessages(connectionId?: string) {
 
       const { data, error: fetchError } = await supabase
         .from('client_messages')
-        .select(`
-          *,
-          sender_profile:profiles!client_messages_sender_id_fkey (
-            full_name,
-            role
-          )
-        `)
+        .select('*')
         .eq('connection_id', connectionId)
         .order('sent_at', { ascending: true });
 
@@ -62,8 +56,9 @@ export function useClientMessages(connectionId?: string) {
 
       const typedMessages = (data || []).map(item => ({
         ...item,
-        message_type: item.message_type as 'text'
-      }));
+        message_type: item.message_type as 'text',
+        sender_profile: undefined
+      })) as ClientMessage[];
 
       setMessages(typedMessages);
     } catch (err) {

@@ -43,11 +43,7 @@ export function useAppointments() {
 
       let query = supabase
         .from('appointments')
-        .select(`
-          *,
-          client_profile:profiles!appointments_client_id_fkey(full_name, email),
-          professional_profile:profiles!appointments_professional_id_fkey(full_name, email)
-        `)
+        .select('*')
         .order('scheduled_at', { ascending: true });
 
       // Filter based on user role
@@ -61,8 +57,13 @@ export function useAppointments() {
 
       if (fetchError) throw fetchError;
 
-      // Type assertion to handle the relationship data properly
-      const typedData = (data || []) as Appointment[];
+      // Convert to typed data without profile relationships for now
+      const typedData = (data || []).map(item => ({
+        ...item,
+        client_profile: null,
+        professional_profile: null
+      })) as Appointment[];
+      
       setAppointments(typedData);
     } catch (err) {
       console.error('Error fetching appointments:', err);
@@ -89,17 +90,17 @@ export function useAppointments() {
           duration_minutes: appointmentData.duration_minutes || 60,
           status: 'scheduled'
         }])
-        .select(`
-          *,
-          client_profile:profiles!appointments_client_id_fkey(full_name, email),
-          professional_profile:profiles!appointments_professional_id_fkey(full_name, email)
-        `)
+        .select()
         .single();
 
       if (error) throw error;
 
-      // Type assertion for the returned data
-      const typedData = data as Appointment;
+      const typedData = {
+        ...data,
+        client_profile: null,
+        professional_profile: null
+      } as Appointment;
+      
       setAppointments(prev => [...prev, typedData]);
       toast.success('Randevu başarıyla oluşturuldu');
       
@@ -118,16 +119,17 @@ export function useAppointments() {
         .from('appointments')
         .update(updates)
         .eq('id', appointmentId)
-        .select(`
-          *,
-          client_profile:profiles!appointments_client_id_fkey(full_name, email),
-          professional_profile:profiles!appointments_professional_id_fkey(full_name, email)
-        `)
+        .select()
         .single();
 
       if (error) throw error;
 
-      const typedData = data as Appointment;
+      const typedData = {
+        ...data,
+        client_profile: null,
+        professional_profile: null
+      } as Appointment;
+      
       setAppointments(prev => 
         prev.map(appointment => 
           appointment.id === appointmentId ? typedData : appointment

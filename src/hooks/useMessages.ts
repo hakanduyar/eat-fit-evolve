@@ -59,13 +59,7 @@ export function useMessages(threadId?: string) {
 
       const { data: messages, error: messagesError } = await supabase
         .from('messages')
-        .select(`
-          *,
-          sender_profile:profiles!messages_sender_id_fkey(
-            full_name,
-            role
-          )
-        `)
+        .select('*')
         .eq('thread_id', threadId)
         .order('sent_at', { ascending: true });
 
@@ -148,17 +142,7 @@ export function useMessageThreads() {
 
       const { data: threads, error: threadsError } = await supabase
         .from('message_threads')
-        .select(`
-          *,
-          client_profile:profiles!message_threads_client_id_fkey(
-            full_name,
-            email
-          ),
-          dietitian_profile:profiles!message_threads_dietitian_id_fkey(
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('dietitian_id', profile.id)
         .order('updated_at', { ascending: false });
 
@@ -168,7 +152,13 @@ export function useMessageThreads() {
         return;
       }
 
-      setThreads(threads || []);
+      const typedThreads = (threads || []).map(thread => ({
+        ...thread,
+        client_profile: undefined,
+        dietitian_profile: undefined
+      })) as MessageThread[];
+
+      setThreads(typedThreads);
     } catch (err) {
       console.error('Unexpected error fetching threads:', err);
       setError('Beklenmeyen bir hata oluştu');

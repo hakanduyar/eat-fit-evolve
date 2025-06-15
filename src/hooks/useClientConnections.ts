@@ -53,21 +53,7 @@ export function useClientConnections() {
 
       const query = supabase
         .from('client_connections')
-        .select(`
-          *,
-          client_profile:profiles!client_connections_client_id_fkey (
-            id,
-            full_name,
-            email,
-            phone
-          ),
-          professional_profile:profiles!client_connections_dietitian_id_fkey (
-            id,
-            full_name,
-            email,
-            phone
-          )
-        `);
+        .select('*');
 
       if (profile.role === 'user') {
         query.eq('client_id', profile.user_id);
@@ -86,8 +72,10 @@ export function useClientConnections() {
       const typedConnections = (data || []).map(item => ({
         ...item,
         status: item.status as 'pending' | 'active' | 'paused' | 'terminated',
-        connection_type: item.connection_type as 'nutrition_only' | 'fitness_only' | 'full_support'
-      }));
+        connection_type: item.connection_type as 'nutrition_only' | 'fitness_only' | 'full_support',
+        client_profile: undefined,
+        professional_profile: undefined
+      })) as ClientConnection[];
 
       setConnections(typedConnections);
     } catch (err) {

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Activity,
+  Activity as ActivityIcon,
   BarChart3,
   Clock,
   Dumbbell,
@@ -21,6 +21,7 @@ import {
 import { useActivities } from "@/hooks/useActivities";
 import { Database } from "@/integrations/supabase/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 
@@ -63,7 +64,7 @@ const Activity = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'cardio':
-        return <Activity className="w-4 h-4" />;
+        return <ActivityIcon className="w-4 h-4" />;
       case 'strength':
         return <Dumbbell className="w-4 h-4" />;
       case 'flexibility':
@@ -71,7 +72,7 @@ const Activity = () => {
       case 'sports':
         return <Target className="w-4 h-4" />;
       default:
-        return <Activity className="w-4 h-4" />;
+        return <ActivityIcon className="w-4 h-4" />;
     }
   };
 

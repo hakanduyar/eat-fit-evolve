@@ -9,11 +9,11 @@ type Appointment = Database['public']['Tables']['appointments']['Row'] & {
   client_profile?: {
     full_name: string;
     email: string;
-  };
+  } | null;
   professional_profile?: {
     full_name: string;
     email: string;
-  };
+  } | null;
 };
 
 interface CreateAppointmentData {
@@ -61,7 +61,9 @@ export function useAppointments() {
 
       if (fetchError) throw fetchError;
 
-      setAppointments(data || []);
+      // Type assertion to handle the relationship data properly
+      const typedData = (data || []) as Appointment[];
+      setAppointments(typedData);
     } catch (err) {
       console.error('Error fetching appointments:', err);
       setError('Randevular alınamadı');
@@ -96,10 +98,12 @@ export function useAppointments() {
 
       if (error) throw error;
 
-      setAppointments(prev => [...prev, data]);
+      // Type assertion for the returned data
+      const typedData = data as Appointment;
+      setAppointments(prev => [...prev, typedData]);
       toast.success('Randevu başarıyla oluşturuldu');
       
-      return { data, error: null };
+      return { data: typedData, error: null };
     } catch (err) {
       console.error('Error creating appointment:', err);
       const errorMessage = err instanceof Error ? err.message : 'Randevu oluşturulurken hata oluştu';
@@ -123,14 +127,15 @@ export function useAppointments() {
 
       if (error) throw error;
 
+      const typedData = data as Appointment;
       setAppointments(prev => 
         prev.map(appointment => 
-          appointment.id === appointmentId ? data : appointment
+          appointment.id === appointmentId ? typedData : appointment
         )
       );
       
       toast.success('Randevu güncellendi');
-      return { data, error: null };
+      return { data: typedData, error: null };
     } catch (err) {
       console.error('Error updating appointment:', err);
       const errorMessage = 'Randevu güncellenirken hata oluştu';

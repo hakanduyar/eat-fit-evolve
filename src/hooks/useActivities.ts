@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { toast } from 'sonner';
 
 type Activity = Database['public']['Tables']['activities']['Row'];
 type ActivityInsert = Database['public']['Tables']['activities']['Insert'];
@@ -34,7 +35,6 @@ export function useActivities(date?: string) {
         .from('activities')
         .select('*')
         .eq('user_id', user!.id)
-        .eq('date', targetDate)
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -52,7 +52,7 @@ export function useActivities(date?: string) {
     }
   };
 
-  const createActivity = async (activityData: Omit<ActivityInsert, 'user_id'>) => {
+  const addActivity = async (activityData: Omit<ActivityInsert, 'user_id'>) => {
     if (!user) return { error: 'Kullanıcı oturumu bulunamadı' };
 
     try {
@@ -68,13 +68,39 @@ export function useActivities(date?: string) {
 
       if (insertError) {
         console.error('Error creating activity:', insertError);
+        toast.error('Aktivite oluşturulamadı');
         return { error: 'Aktivite oluşturulamadı' };
       }
 
+      toast.success('Aktivite başarıyla eklendi');
       await fetchActivities(); // Refresh the list
       return { data, error: null };
     } catch (err) {
       console.error('Unexpected error creating activity:', err);
+      toast.error('Beklenmeyen bir hata oluştu');
+      return { error: 'Beklenmeyen bir hata oluştu' };
+    }
+  };
+
+  const deleteActivity = async (activityId: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', activityId);
+
+      if (deleteError) {
+        console.error('Error deleting activity:', deleteError);
+        toast.error('Aktivite silinemedi');
+        return { error: 'Aktivite silinemedi' };
+      }
+
+      toast.success('Aktivite silindi');
+      await fetchActivities(); // Refresh the list
+      return { error: null };
+    } catch (err) {
+      console.error('Unexpected error deleting activity:', err);
+      toast.error('Beklenmeyen bir hata oluştu');
       return { error: 'Beklenmeyen bir hata oluştu' };
     }
   };
@@ -93,7 +119,8 @@ export function useActivities(date?: string) {
     activities,
     loading,
     error,
-    createActivity,
+    addActivity,
+    deleteActivity,
     refetch: fetchActivities,
     getTotalStats
   };

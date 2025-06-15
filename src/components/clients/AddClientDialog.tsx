@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, User, Mail } from 'lucide-react';
 import { useClientConnections } from '@/hooks/useClientConnections';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AddClientDialog() {
   const [open, setOpen] = useState(false);
@@ -21,8 +22,27 @@ export function AddClientDialog() {
   const [notes, setNotes] = useState('');
   const [adding, setAdding] = useState(false);
 
-  const { searchUserByEmail, addClientConnection } = useClientConnections();
+  const { createConnection } = useClientConnections();
   const { toast } = useToast();
+
+  const searchUserByEmail = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, email, role')
+        .eq('email', email.toLowerCase())
+        .eq('role', 'user')
+        .maybeSingle();
+
+      if (error) {
+        return { data: null, error: 'Arama hatası' };
+      }
+
+      return { data, error: null };
+    } catch (err) {
+      return { data: null, error: 'Beklenmeyen hata' };
+    }
+  };
 
   const handleSearch = async () => {
     if (!email.trim()) return;
@@ -54,11 +74,12 @@ export function AddClientDialog() {
     if (!searchResult) return;
 
     setAdding(true);
-    const { data, error } = await addClientConnection({
-      client_id: searchResult.id,
-      connection_type: connectionType,
-      notes: notes.trim() || undefined
-    });
+    const { error } = await createConnection(
+      searchResult.email,
+      connectionType,
+      'dietitian',
+      notes.trim() || undefined
+    );
 
     if (error) {
       toast({

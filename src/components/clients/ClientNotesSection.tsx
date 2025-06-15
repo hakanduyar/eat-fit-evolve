@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useClientNotes } from '@/hooks/useClientNotes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,11 +25,7 @@ export function ClientNotesSection({ clientId }: ClientNotesSectionProps) {
     if (!newNote.trim() || !clientId) return;
 
     setAdding(true);
-    const { error } = await addNote({
-      client_id: clientId,
-      note_type: noteType,
-      content: newNote.trim()
-    });
+    const { error } = await addNote(clientId, newNote.trim(), noteType);
 
     if (error) {
       toast({

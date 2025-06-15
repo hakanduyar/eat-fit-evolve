@@ -20,7 +20,7 @@ export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
     switch (status) {
       case 'active': return 'bg-green-500';
       case 'pending': return 'bg-yellow-500';
-      case 'inactive': return 'bg-gray-500';
+      case 'paused': return 'bg-gray-500';
       case 'terminated': return 'bg-red-500';
       default: return 'bg-gray-500';
     }
@@ -30,7 +30,7 @@ export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
     switch (status) {
       case 'active': return 'Aktif';
       case 'pending': return 'Beklemede';
-      case 'inactive': return 'Pasif';
+      case 'paused': return 'Pasif';
       case 'terminated': return 'Sonlandırıldı';
       default: return status;
     }
@@ -92,7 +92,7 @@ export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
                 
                 <div className="text-xs text-muted-foreground">
                   {getConnectionTypeText(connection.connection_type)} • 
-                  Başlangıç: {new Date(connection.start_date).toLocaleDateString('tr-TR')}
+                  Başlangıç: {connection.start_date ? new Date(connection.start_date).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export function ClientCard({ connection, onStatusChange }: ClientCardProps) {
                 <DropdownMenuItem onClick={() => onStatusChange(connection.id, 'active')}>
                   Aktif Yap
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onStatusChange(connection.id, 'inactive')}>
+                <DropdownMenuItem onClick={() => onStatusChange(connection.id, 'paused')}>
                   Pasif Yap
                 </DropdownMenuItem>
                 <DropdownMenuItem 

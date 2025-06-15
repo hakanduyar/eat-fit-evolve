@@ -108,7 +108,14 @@ export function useNewClientConnections() {
         return;
       }
 
-      setConnections(data || []);
+      // Type cast the data to ensure proper types
+      const typedConnections = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'active' | 'paused' | 'terminated',
+        connection_type: item.connection_type as 'nutrition_only' | 'fitness_only' | 'full_support'
+      }));
+
+      setConnections(typedConnections);
     } catch (err) {
       console.error('Unexpected error fetching connections:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -308,7 +315,13 @@ export function useClientNotes(connectionId?: string) {
         return;
       }
 
-      setNotes(data || []);
+      // Type cast the note_type to ensure proper types
+      const typedNotes = (data || []).map(note => ({
+        ...note,
+        note_type: note.note_type as 'general' | 'progress' | 'concern' | 'achievement' | 'reminder'
+      }));
+
+      setNotes(typedNotes);
     } catch (err) {
       console.error('Unexpected error fetching notes:', err);
       setError('Beklenmeyen bir hata oluştu');

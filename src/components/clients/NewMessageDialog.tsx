@@ -18,7 +18,7 @@ interface NewMessageDialogProps {
 export function NewMessageDialog({ connection }: NewMessageDialogProps) {
   const [open, setOpen] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [messageType, setMessageType] = useState<'general' | 'progress' | 'concern' | 'achievement' | 'reminder'>('general');
+  const [messageType, setMessageType] = useState<'text'>('text');
   const { profile } = useAuth();
   const { messages, loading, sendMessage } = useClientMessages(connection.id);
   const [sending, setSending] = useState(false);
@@ -26,7 +26,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
 
   const getRecipientId = () => {
     if (profile?.role === 'user') {
-      return connection.professional_id;
+      return connection.dietitian_id;
     } else {
       return connection.client_id;
     }
@@ -54,7 +54,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
       });
     } else {
       setNewMessage('');
-      setMessageType('general');
+      setMessageType('text');
       toast({
         title: 'Başarılı',
         description: 'Mesaj gönderildi',
@@ -71,17 +71,6 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
       day: '2-digit',
       month: '2-digit'
     });
-  };
-
-  const getMessageTypeBadge = (type: string) => {
-    const types = {
-      general: { label: 'Genel', variant: 'secondary' as const },
-      progress: { label: 'İlerleme', variant: 'default' as const },
-      concern: { label: 'Endişe', variant: 'destructive' as const },
-      achievement: { label: 'Başarı', variant: 'default' as const },
-      reminder: { label: 'Hatırlatma', variant: 'outline' as const }
-    };
-    return types[type as keyof typeof types] || types.general;
   };
 
   return (
@@ -126,11 +115,8 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
                         {message.sender_profile?.role === 'dietitian' ? 'Diyetisyen' : 
                          message.sender_profile?.role === 'trainer' ? 'Antrenör' : 'Danışan'}
                       </Badge>
-                      <Badge {...getMessageTypeBadge(message.message_type)} className="text-xs">
-                        {getMessageTypeBadge(message.message_type).label}
-                      </Badge>
-                      <span className="ml-auto">{formatMessageTime(message.created_at)}</span>
-                      {!message.is_read && message.recipient_id === profile?.user_id && (
+                      <span className="ml-auto">{formatMessageTime(message.sent_at)}</span>
+                      {!message.read_at && (
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                       )}
                     </div>
@@ -139,7 +125,7 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
                         ? 'bg-primary text-primary-foreground ml-8' 
                         : 'bg-muted mr-8'
                     }`}>
-                      <p className="text-sm">{message.message}</p>
+                      <p className="text-sm">{message.content}</p>
                     </div>
                   </div>
                 ))}
@@ -149,22 +135,6 @@ export function NewMessageDialog({ connection }: NewMessageDialogProps) {
 
           {/* Message Input */}
           <div className="space-y-3 border-t pt-4">
-            <div className="flex gap-2">
-              <Select value={messageType} onValueChange={(value: any) => setMessageType(value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">Genel</SelectItem>
-                  <SelectItem value="progress">İlerleme</SelectItem>
-                  <SelectItem value="concern">Endişe</SelectItem>
-                  <SelectItem value="achievement">Başarı</SelectItem>
-                  <SelectItem value="reminder">Hatırlatma</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex-1" />
-            </div>
-            
             <Textarea
               placeholder="Mesajınızı yazın..."
               value={newMessage}

@@ -107,7 +107,7 @@ export function NewClientsTab() {
                   ? connection.professional_profile 
                   : connection.client_profile;
                 const displayRole = profile?.role === 'user' 
-                  ? connection.professional_type === 'dietitian' ? 'Diyetisyen' : 'Antrenör'
+                  ? 'Diyetisyen'
                   : 'Danışan';
 
                 return (

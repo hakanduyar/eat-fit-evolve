@@ -2,26 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Plus } from "lucide-react";
-
-// Use local type definition until Supabase types are updated
-type MealEntry = {
-  id: string;
-  daily_nutrition_id: string;
-  food_id: string;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
-  amount: number;
-  unit: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  eaten_at: string;
-  created_at: string;
-};
+import { MealEntry, MealType } from "@/hooks/useMealEntries";
 
 interface MealCardProps {
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  mealType: MealType;
   mealEntries?: MealEntry[];
   onEdit?: () => void;
   onDelete?: () => void;

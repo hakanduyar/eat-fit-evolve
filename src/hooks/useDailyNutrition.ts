@@ -46,13 +46,15 @@ export function useDailyNutrition(date?: string) {
       setLoading(true);
       setError(null);
 
-      // Direct query since RPC functions aren't available yet
-      const { data, error: fetchError } = await supabase
+      // Direct query with proper type handling
+      const query = supabase
         .from('daily_nutrition' as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('date', targetDate)
         .maybeSingle();
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching daily nutrition:', fetchError);
@@ -60,7 +62,8 @@ export function useDailyNutrition(date?: string) {
         return;
       }
 
-      setDailyNutrition(data || null);
+      // Type assertion for the data
+      setDailyNutrition((data as DailyNutrition) || null);
     } catch (err) {
       console.error('Unexpected error fetching daily nutrition:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -81,11 +84,13 @@ export function useDailyNutrition(date?: string) {
         notes: data.notes || null
       };
 
-      const { data: result, error: upsertError } = await supabase
+      const query = supabase
         .from('daily_nutrition' as any)
         .upsert(upsertData, { onConflict: 'user_id,date' })
         .select()
         .single();
+
+      const { data: result, error: upsertError } = await query;
 
       if (upsertError) {
         console.error('Error upserting daily nutrition:', upsertError);
@@ -93,7 +98,7 @@ export function useDailyNutrition(date?: string) {
       }
 
       await fetchDailyNutrition(); // Refresh data
-      return { data: result, error: null };
+      return { data: result as DailyNutrition, error: null };
     } catch (err) {
       console.error('Unexpected error upserting daily nutrition:', err);
       return { error: 'Beklenmeyen bir hata oluştu' };

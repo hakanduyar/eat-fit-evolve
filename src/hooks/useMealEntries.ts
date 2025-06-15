@@ -54,11 +54,13 @@ export function useMealEntries(date?: string) {
       setLoading(true);
       setError(null);
 
-      // Direct query since RPC functions aren't available yet
-      const { data, error: fetchError } = await supabase
+      // Direct query with proper type handling
+      const query = supabase
         .from('meal_entries' as any)
         .select('*')
         .eq('daily_nutrition_id', dailyNutrition.id);
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) {
         console.error('Error fetching meal entries:', fetchError);
@@ -66,7 +68,8 @@ export function useMealEntries(date?: string) {
         return;
       }
 
-      setMealEntries(data || []);
+      // Type assertion for the data array
+      setMealEntries((data as MealEntry[]) || []);
     } catch (err) {
       console.error('Unexpected error fetching meal entries:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -116,11 +119,13 @@ export function useMealEntries(date?: string) {
         fiber: Number((Number(foodData.fiber_per_100g) * multiplier).toFixed(2))
       };
 
-      const { data, error: insertError } = await supabase
+      const query = supabase
         .from('meal_entries' as any)
         .insert(calculatedEntry)
         .select()
         .single();
+
+      const { data, error: insertError } = await query;
 
       if (insertError) {
         console.error('Error adding meal entry:', insertError);
@@ -128,7 +133,7 @@ export function useMealEntries(date?: string) {
       }
 
       await fetchMealEntries(); // Refresh the list
-      return { data, error: null };
+      return { data: data as MealEntry, error: null };
     } catch (err) {
       console.error('Unexpected error adding meal entry:', err);
       return { error: 'Beklenmeyen bir hata oluştu' };

@@ -62,8 +62,8 @@ export function useDailyNutrition(date?: string) {
         return;
       }
 
-      // Type assertion for the data
-      setDailyNutrition((data as DailyNutrition) || null);
+      // Proper type conversion through unknown first
+      setDailyNutrition(data ? (data as unknown as DailyNutrition) : null);
     } catch (err) {
       console.error('Unexpected error fetching daily nutrition:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -98,7 +98,7 @@ export function useDailyNutrition(date?: string) {
       }
 
       await fetchDailyNutrition(); // Refresh data
-      return { data: result as DailyNutrition, error: null };
+      return { data: result ? (result as unknown as DailyNutrition) : null, error: null };
     } catch (err) {
       console.error('Unexpected error upserting daily nutrition:', err);
       return { error: 'Beklenmeyen bir hata oluştu' };

@@ -68,8 +68,8 @@ export function useMealEntries(date?: string) {
         return;
       }
 
-      // Type assertion for the data array
-      setMealEntries((data as MealEntry[]) || []);
+      // Proper type conversion through unknown first
+      setMealEntries(data ? (data as unknown as MealEntry[]) : []);
     } catch (err) {
       console.error('Unexpected error fetching meal entries:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -133,7 +133,7 @@ export function useMealEntries(date?: string) {
       }
 
       await fetchMealEntries(); // Refresh the list
-      return { data: data as MealEntry, error: null };
+      return { data: data ? (data as unknown as MealEntry) : null, error: null };
     } catch (err) {
       console.error('Unexpected error adding meal entry:', err);
       return { error: 'Beklenmeyen bir hata oluştu' };

@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +6,7 @@ import { useClientConnections } from "@/hooks/useClientConnections";
 import { AddClientDialog } from "@/components/clients/AddClientDialog";
 import { ClientCard } from "@/components/clients/ClientCard";
 import { useToast } from "@/hooks/use-toast";
+import { MessagesTab } from "@/components/clients/MessagesTab";
 
 const Clients = () => {
   const { profile } = useAuth();
@@ -116,39 +116,49 @@ const Clients = () => {
         </Card>
       </div>
 
-      {/* Clients List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Danışan Listesi</CardTitle>
-          <CardDescription>Tüm danışanlarınızın özet bilgileri</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-muted-foreground">Danışanlar yükleniyor...</p>
-            </div>
-          ) : connections.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz danışan yok</h3>
-              <p className="text-gray-600 mb-4">
-                İlk danışanınızı eklemek için yukarıdaki "Yeni Danışan" butonunu kullanın.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {connections.map((connection) => (
-                <ClientCard 
-                  key={connection.id} 
-                  connection={connection}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Content Tabs */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Clients List */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Danışan Listesi</CardTitle>
+              <CardDescription>Tüm danışanlarınızın özet bilgileri</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-muted-foreground">Danışanlar yükleniyor...</p>
+                </div>
+              ) : connections.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz danışan yok</h3>
+                  <p className="text-gray-600 mb-4">
+                    İlk danışanınızı eklemek için yukarıdaki "Yeni Danışan" butonunu kullanın.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {connections.map((connection) => (
+                    <ClientCard 
+                      key={connection.id} 
+                      connection={connection}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Messages Sidebar */}
+        <div className="lg:col-span-1">
+          <MessagesTab />
+        </div>
+      </div>
     </div>
   );
 };

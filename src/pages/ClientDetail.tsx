@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useClientConnections } from '@/hooks/useClientConnections';
 import { useClientNotes } from '@/hooks/useClientNotes';
@@ -11,6 +10,7 @@ import { ArrowLeft, User, Phone, Mail, Calendar, MessageCircle } from 'lucide-re
 import { ClientNotesSection } from '@/components/clients/ClientNotesSection';
 import { ClientNutritionHistory } from '@/components/clients/ClientNutritionHistory';
 import { useToast } from '@/hooks/use-toast';
+import { MessageDialog } from '@/components/clients/MessageDialog';
 
 const ClientDetail = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -109,10 +109,10 @@ const ClientDetail = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Mesaj Gönder
-          </Button>
+          <MessageDialog 
+            clientId={connection.client_id}
+            clientName={connection.client_profile?.full_name}
+          />
           
           {connection.status === 'active' ? (
             <Button variant="outline" onClick={() => handleStatusChange('inactive')}>
@@ -195,6 +195,7 @@ const ClientDetail = () => {
         <TabsList>
           <TabsTrigger value="notes">Notlar</TabsTrigger>
           <TabsTrigger value="nutrition">Beslenme Geçmişi</TabsTrigger>
+          <TabsTrigger value="messages">Mesajlar</TabsTrigger>
           <TabsTrigger value="programs">Programlar</TabsTrigger>
         </TabsList>
 
@@ -204,6 +205,28 @@ const ClientDetail = () => {
 
         <TabsContent value="nutrition">
           <ClientNutritionHistory clientId={clientId} />
+        </TabsContent>
+
+        <TabsContent value="messages">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mesajlaşma</CardTitle>
+              <CardDescription>Bu danışan ile mesaj geçmişi</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <MessageCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Mesajlaşma</h3>
+                <p className="text-gray-600 mb-4">
+                  Bu danışan ile mesajlaşmak için yukarıdaki "Mesaj Gönder" butonunu kullanın.
+                </p>
+                <MessageDialog 
+                  clientId={connection.client_id}
+                  clientName={connection.client_profile?.full_name}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="programs">

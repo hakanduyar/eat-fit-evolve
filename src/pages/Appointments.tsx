@@ -1,91 +1,42 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Plus, Video, Phone } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAppointments } from "@/hooks/useAppointments";
+import { CreateAppointmentDialog } from "@/components/appointments/CreateAppointmentDialog";
+import { AppointmentCard } from "@/components/appointments/AppointmentCard";
+import { Calendar, Clock, Users } from "lucide-react";
 
-// Mock data for appointments
-const mockAppointments = [
-  {
-    id: '1',
-    title: 'Beslenme Danışmanlığı',
-    client: 'Ahmet Yılmaz',
-    date: '2025-06-16',
-    time: '14:00',
-    duration: 60,
-    type: 'video',
-    status: 'scheduled'
-  },
-  {
-    id: '2',
-    title: 'İlerleme Takibi',
-    client: 'Ayşe Demir',
-    date: '2025-06-16',
-    time: '16:00',
-    duration: 30,
-    type: 'phone',
-    status: 'scheduled'
-  },
-  {
-    id: '3',
-    title: 'İlk Görüşme',
-    client: 'Mehmet Kaya',
-    date: '2025-06-17',
-    time: '10:00',
-    duration: 90,
-    type: 'video',
-    status: 'pending'
-  }
-];
-
-export default function Appointments() {
+const Appointments = () => {
   const { profile } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const { 
+    appointments, 
+    loading, 
+    updateAppointment, 
+    deleteAppointment,
+    getUpcomingAppointments,
+    getTodaysAppointments 
+  } = useAppointments();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'scheduled': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'completed': return 'bg-blue-500';
-      case 'cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const handleComplete = async (appointmentId: string) => {
+    await updateAppointment(appointmentId, { 
+      status: 'completed',
+      notes: 'Randevu tamamlandı'
+    });
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'scheduled': return 'Planlandı';
-      case 'pending': return 'Beklemede';
-      case 'completed': return 'Tamamlandı';
-      case 'cancelled': return 'İptal Edildi';
-      default: return status;
-    }
-  };
+  const upcomingAppointments = getUpcomingAppointments();
+  const todaysAppointments = getTodaysAppointments();
+  const pastAppointments = appointments.filter(apt => 
+    apt.status === 'completed' || apt.status === 'cancelled'
+  );
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return <Video className="w-4 h-4" />;
-      case 'phone': return <Phone className="w-4 h-4" />;
-      default: return <User className="w-4 h-4" />;
-    }
-  };
-
-  if (profile?.role === 'user') {
+  if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Randevularım</h2>
-          <p className="text-gray-600 mb-6">
-            Diyetisyeniniz ile planlanmış randevularınızı burada görebilirsiniz.
-          </p>
-          <div className="bg-muted rounded-lg p-6">
-            <p className="text-muted-foreground">
-              Henüz planlanmış randevunuz bulunmuyor.
-            </p>
-          </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
         </div>
       </div>
     );
@@ -93,133 +44,175 @@ export default function Appointments() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Randevular</h1>
-          <p className="text-gray-600">Danışanlarınız ile planlanmış randevularınız</p>
+          <p className="text-gray-600 mt-2">
+            Randevularınızı yönetin ve takip edin
+          </p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Yeni Randevu
-        </Button>
+        {profile?.role !== 'user' && <CreateAppointmentDialog />}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bugünkü Randevular</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{todaysAppointments.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Yaklaşan Randevular</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Toplam Randevu</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{appointments.length}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Appointments Tabs */}
+      <Tabs defaultValue="today" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="today">Bugün ({todaysAppointments.length})</TabsTrigger>
+          <TabsTrigger value="upcoming">Yaklaşan ({upcomingAppointments.length})</TabsTrigger>
+          <TabsTrigger value="all">Tümü ({appointments.length})</TabsTrigger>
+          <TabsTrigger value="past">Geçmiş ({pastAppointments.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="today" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Bugünkü Randevular
-              </CardTitle>
+              <CardTitle>Bugünkü Randevular</CardTitle>
               <CardDescription>
-                {new Date().toLocaleDateString('tr-TR', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                Bugün için planlanmış randevularınız
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {mockAppointments
-                .filter(apt => apt.date === selectedDate)
-                .map((appointment) => (
-                <div key={appointment.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        {getTypeIcon(appointment.type)}
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{appointment.title}</h4>
-                        <p className="text-sm text-muted-foreground">{appointment.client}</p>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-white ${getStatusColor(appointment.status)}`}
-                    >
-                      {getStatusText(appointment.status)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {appointment.time}
-                    </div>
-                    <span>•</span>
-                    <span>{appointment.duration} dakika</span>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      Düzenle
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      İptal Et
-                    </Button>
-                    {appointment.status === 'scheduled' && (
-                      <Button size="sm">
-                        Başlat
-                      </Button>
-                    )}
-                  </div>
+            <CardContent>
+              {todaysAppointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Bugün için planlanmış randevu bulunmuyor
                 </div>
-              ))}
-              
-              {mockAppointments.filter(apt => apt.date === selectedDate).length === 0 && (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600">Bu tarihte planlanmış randevu yok.</p>
+              ) : (
+                <div className="grid gap-4">
+                  {todaysAppointments.map((appointment) => (
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      onComplete={handleComplete}
+                      onDelete={deleteAppointment}
+                    />
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Hızlı İstatistikler</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">3</div>
-                <div className="text-sm text-muted-foreground">Bu Hafta</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">12</div>
-                <div className="text-sm text-muted-foreground">Bu Ay</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">1</div>
-                <div className="text-sm text-muted-foreground">Beklemede</div>
-              </div>
-            </CardContent>
-          </Card>
-
+        <TabsContent value="upcoming" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Yaklaşan Randevular</CardTitle>
+              <CardDescription>
+                Gelecek için planlanmış randevularınız
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {mockAppointments
-                .filter(apt => new Date(apt.date) > new Date())
-                .slice(0, 3)
-                .map((appointment) => (
-                <div key={appointment.id} className="border-l-4 border-primary pl-3">
-                  <div className="font-medium text-sm">{appointment.client}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(appointment.date).toLocaleDateString('tr-TR')} - {appointment.time}
-                  </div>
+            <CardContent>
+              {upcomingAppointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Yaklaşan randevu bulunmuyor
                 </div>
-              ))}
+              ) : (
+                <div className="grid gap-4">
+                  {upcomingAppointments.map((appointment) => (
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      onComplete={handleComplete}
+                      onDelete={deleteAppointment}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="all" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tüm Randevular</CardTitle>
+              <CardDescription>
+                Tüm randevularınızın listesi
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {appointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Henüz randevu bulunmuyor
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {appointments.map((appointment) => (
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      onComplete={handleComplete}
+                      onDelete={deleteAppointment}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="past" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Geçmiş Randevular</CardTitle>
+              <CardDescription>
+                Tamamlanmış ve iptal edilmiş randevular
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pastAppointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Geçmiş randevu bulunmuyor
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {pastAppointments.map((appointment) => (
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      showActions={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
+
+export default Appointments;

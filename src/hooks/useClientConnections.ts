@@ -29,23 +29,23 @@ export type ClientConnection = {
 };
 
 export function useClientConnections() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [connections, setConnections] = useState<ClientConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile) {
+    if (!user || !profile) {
       setConnections([]);
       setLoading(false);
       return;
     }
 
     fetchConnections();
-  }, [profile]);
+  }, [user, profile]);
 
   const fetchConnections = async () => {
-    if (!profile) return;
+    if (!user || !profile) return;
 
     try {
       setLoading(true);
@@ -56,9 +56,9 @@ export function useClientConnections() {
         .select('*');
 
       if (profile.role === 'user') {
-        query.eq('client_id', profile.user_id);
+        query.eq('client_id', user.id);
       } else {
-        query.eq('dietitian_id', profile.user_id);
+        query.eq('dietitian_id', user.id);
       }
 
       const { data, error: fetchError } = await query.order('created_at', { ascending: false });
@@ -92,7 +92,7 @@ export function useClientConnections() {
     professionalType: 'dietitian' | 'trainer',
     notes?: string
   ) => {
-    if (!profile || profile.role === 'user') {
+    if (!user || !profile || profile.role === 'user') {
       return { error: 'Sadece profesyoneller bağlantı oluşturabilir' };
     }
 
@@ -112,7 +112,7 @@ export function useClientConnections() {
         .from('client_connections')
         .insert({
           client_id: clientProfile.user_id,
-          dietitian_id: profile.user_id,
+          dietitian_id: user.id,
           connection_type: connectionType,
           notes,
           status: 'pending'

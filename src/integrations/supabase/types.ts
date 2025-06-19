@@ -234,7 +234,7 @@ export type Database = {
           id: string
           notes: string | null
           updated_at: string | null
-          user_id: string | null
+          user_id: string
           water_intake: number | null
         }
         Insert: {
@@ -243,7 +243,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id: string
           water_intake?: number | null
         }
         Update: {
@@ -252,7 +252,7 @@ export type Database = {
           id?: string
           notes?: string | null
           updated_at?: string | null
-          user_id?: string | null
+          user_id?: string
           water_intake?: number | null
         }
         Relationships: []
@@ -388,6 +388,13 @@ export type Database = {
           unit?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "meal_entries_daily_nutrition_fkey"
+            columns: ["daily_nutrition_id"]
+            isOneToOne: false
+            referencedRelation: "daily_nutrition"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "meal_entries_daily_nutrition_id_fkey"
             columns: ["daily_nutrition_id"]

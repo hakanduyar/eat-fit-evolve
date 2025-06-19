@@ -20,23 +20,23 @@ export type ClientMessage = {
 };
 
 export function useClientMessages(connectionId?: string) {
-  const { profile } = useAuth();
+  const { user } = useAuth(); // Use user instead of profile for auth.uid()
   const [messages, setMessages] = useState<ClientMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile || !connectionId) {
+    if (!user || !connectionId) {
       setMessages([]);
       setLoading(false);
       return;
     }
 
     fetchMessages();
-  }, [profile, connectionId]);
+  }, [user, connectionId]);
 
   const fetchMessages = async () => {
-    if (!profile || !connectionId) return;
+    if (!user || !connectionId) return;
 
     try {
       setLoading(true);
@@ -74,7 +74,7 @@ export function useClientMessages(connectionId?: string) {
     message: string,
     messageType: ClientMessage['message_type'] = 'text'
   ) => {
-    if (!profile || !connectionId || !message.trim()) {
+    if (!user || !connectionId || !message.trim()) {
       return { error: 'Geçersiz mesaj' };
     }
 
@@ -83,7 +83,7 @@ export function useClientMessages(connectionId?: string) {
         .from('client_messages')
         .insert({
           connection_id: connectionId,
-          sender_id: profile.user_id,
+          sender_id: user.id,
           recipient_id: recipientId,
           message: message.trim(),
           message_type: messageType
@@ -110,7 +110,7 @@ export function useClientMessages(connectionId?: string) {
         .from('client_messages')
         .update({ read_at: new Date().toISOString() })
         .eq('id', messageId)
-        .eq('recipient_id', profile?.user_id);
+        .eq('recipient_id', user?.id);
 
       if (error) {
         console.error('Error marking message as read:', error);

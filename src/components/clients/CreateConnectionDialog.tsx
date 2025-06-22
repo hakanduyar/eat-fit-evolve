@@ -1,23 +1,25 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useClientConnections } from '@/hooks/useClientConnections';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
-export function CreateConnectionDialog() {
-  const [open, setOpen] = useState(false);
+interface CreateConnectionDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function CreateConnectionDialog({ isOpen, onClose }: CreateConnectionDialogProps) {
   const [email, setEmail] = useState('');
-  const [connectionType, setConnectionType] = useState<'nutrition_only' | 'full_support'>('nutrition_only');
+  const [connectionType, setConnectionType] = useState<'nutrition_only' | 'fitness_only' | 'full_support'>('full_support');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const { createConnection } = useClientConnections();
   const { toast } = useToast();
 
@@ -26,85 +28,87 @@ export function CreateConnectionDialog() {
     if (!email.trim()) return;
 
     setLoading(true);
-    const { error } = await createConnection(
-      email.trim(),
-      connectionType,
-      'dietitian',
-      notes.trim() || undefined
-    );
-
-    if (error) {
+    try {
+      const { error } = await createConnection(email, connectionType, notes);
+      if (error) {
+        toast({
+          title: 'Hata',
+          description: error,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Başarılı',
+          description: 'Bağlantı oluşturuldu'
+        });
+        setEmail('');
+        setNotes('');
+        setConnectionType('full_support');
+        onClose();
+      }
+    } catch (err) {
       toast({
         title: 'Hata',
-        description: error,
+        description: 'Beklenmeyen bir hata oluştu',
         variant: 'destructive'
       });
-    } else {
-      toast({
-        title: 'Başarılı',
-        description: 'Danışan bağlantısı oluşturuldu',
-      });
-      setOpen(false);
-      setEmail('');
-      setNotes('');
-      setConnectionType('nutrition_only');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Bağlantı Oluştur
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Yeni Danışan Bağlantısı</DialogTitle>
+          <DialogTitle>Yeni Bağlantı Oluştur</DialogTitle>
         </DialogHeader>
-        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Danışan Email</Label>
+          <div>
+            <Label htmlFor="email">Danışan Email Adresi</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@email.com"
+              placeholder="danisan@email.com"
               required
             />
           </div>
-
-          <div className="space-y-2">
-            <Label>Bağlantı Türü</Label>
-            <Select value={connectionType} onValueChange={(value: any) => setConnectionType(value)}>
+          
+          <div>
+            <Label htmlFor="connectionType">Bağlantı Türü</Label>
+            <Select value={connectionType} onValueChange={(value: 'nutrition_only' | 'fitness_only' | 'full_support') => setConnectionType(value)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Bağlantı türünü seçin" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="nutrition_only">Sadece Beslenme</SelectItem>
+                <SelectItem value="fitness_only">Sadece Fitness</SelectItem>
                 <SelectItem value="full_support">Tam Destek</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="notes">Notlar (Opsiyonel)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Bu bağlantı hakkında notlar..."
+              placeholder="Bağlantı hakkında notlar..."
+              rows={3}
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Oluşturuluyor...' : 'Bağlantı Oluştur'}
-          </Button>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              İptal
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Oluşturuluyor...' : 'Oluştur'}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

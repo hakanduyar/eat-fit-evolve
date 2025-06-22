@@ -74,7 +74,18 @@ export function useClientConnections() {
         return;
       }
 
-      setConnections(data || []);
+      // Type assertion to handle the complex joined data
+      const typedConnections = (data || []).map(connection => ({
+        ...connection,
+        client_profile: connection.client_profile && typeof connection.client_profile === 'object' && !('error' in connection.client_profile) 
+          ? connection.client_profile as { id: string; full_name: string; email: string; phone: string | null; }
+          : null,
+        professional_profile: connection.professional_profile && typeof connection.professional_profile === 'object' && !('error' in connection.professional_profile)
+          ? connection.professional_profile as { id: string; full_name: string; email: string; phone: string | null; }
+          : null
+      })) as ClientConnection[];
+
+      setConnections(typedConnections);
     } catch (err) {
       console.error('Unexpected error fetching connections:', err);
       setError('Beklenmeyen bir hata oluştu');

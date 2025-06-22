@@ -73,7 +73,15 @@ export function useClientMessages(connectionId?: string) {
         return;
       }
 
-      setMessages(data || []);
+      // Type assertion to handle the complex joined data
+      const typedMessages = (data || []).map(message => ({
+        ...message,
+        sender_profile: message.sender_profile && typeof message.sender_profile === 'object' && !('error' in message.sender_profile)
+          ? message.sender_profile as { full_name: string; role: string; }
+          : null
+      })) as ClientMessage[];
+
+      setMessages(typedMessages);
     } catch (err) {
       console.error('Unexpected error fetching messages:', err);
       setError('Beklenmeyen bir hata oluştu');

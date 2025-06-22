@@ -6,6 +6,7 @@ import { LandingHeader } from '@/components/landing/LandingHeader';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
@@ -26,7 +27,7 @@ export default function Landing() {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
@@ -35,6 +36,7 @@ export default function Landing() {
       <HeroSection />
       <FeaturesSection />
       <TestimonialsSection />
+      <PricingSection />
       <CTASection />
       <LandingFooter />
     </div>

@@ -1,12 +1,13 @@
 
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft } from 'lucide-react';
 
 type AuthMode = 'login' | 'register' | 'forgot-password';
 
@@ -29,6 +30,15 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-teal-50 p-4">
       <div className="w-full max-w-md">
+        {/* Back to Landing Link */}
+        <Link 
+          to="/landing" 
+          className="inline-flex items-center text-gray-600 hover:text-green-600 transition-colors duration-200 mb-8"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Ana sayfaya dön
+        </Link>
+
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">

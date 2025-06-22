@@ -14,7 +14,7 @@ const data = [
 ];
 
 export function NutritionChart() {
-  const { entries } = useMealEntries();
+  const { mealEntries } = useMealEntries();
 
   return (
     <Card>

@@ -5,15 +5,17 @@ import { useMealEntries } from '@/hooks/useMealEntries';
 import { useWaterIntake } from '@/hooks/useWaterIntake';
 
 export function StatsCards() {
-  const { entries, loading } = useMealEntries();
-  const { totalIntake } = useWaterIntake();
+  const { mealEntries, loading } = useMealEntries();
+  const { getTotalWater } = useWaterIntake();
 
-  const todayCalories = entries
+  const todayCalories = mealEntries
     ?.filter(entry => {
       const today = new Date().toDateString();
-      return new Date(entry.consumed_at).toDateString() === today;
+      return new Date(entry.eaten_at).toDateString() === today;
     })
-    .reduce((sum, entry) => sum + (entry.food?.calories_per_100g || 0) * (entry.quantity / 100), 0) || 0;
+    .reduce((sum, entry) => sum + (entry.food?.calories_per_100g || 0) * (entry.amount / 100), 0) || 0;
+
+  const totalWaterLiters = (getTotalWater() / 1000).toFixed(1);
 
   const stats = [
     {
@@ -32,7 +34,7 @@ export function StatsCards() {
     },
     {
       title: "Su Tüketimi",
-      value: `${totalIntake}L`,
+      value: `${totalWaterLiters}L`,
       description: "2.5L hedeften",
       icon: Activity,
       trend: "+15%"

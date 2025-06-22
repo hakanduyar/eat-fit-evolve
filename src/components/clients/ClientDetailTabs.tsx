@@ -1,7 +1,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 import { ClientNotesSection } from './ClientNotesSection';
 import { ClientNutritionHistory } from './ClientNutritionHistory';
 import { MessageDialog } from './MessageDialog';
@@ -12,6 +14,8 @@ interface ClientDetailTabsProps {
 }
 
 export function ClientDetailTabs({ clientId, clientName }: ClientDetailTabsProps) {
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+
   return (
     <Tabs defaultValue="notes" className="space-y-4">
       <TabsList>
@@ -40,11 +44,18 @@ export function ClientDetailTabs({ clientId, clientName }: ClientDetailTabsProps
               <MessageCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Mesajlaşma</h3>
               <p className="text-gray-600 mb-4">
-                Bu danışan ile mesajlaşmak için yukarıdaki "Mesaj Gönder" butonunu kullanın.
+                Bu danışan ile mesajlaşmak için aşağıdaki "Mesaj Gönder" butonunu kullanın.
               </p>
-              <MessageDialog 
-                clientId={clientId}
-                clientName={clientName}
+              <Button onClick={() => setMessageDialogOpen(true)}>
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Mesaj Gönder
+              </Button>
+              
+              <MessageDialog
+                isOpen={messageDialogOpen}
+                onClose={() => setMessageDialogOpen(false)}
+                recipientId={clientId || ''}
+                connectionId="" // This will need to be passed from parent
               />
             </div>
           </CardContent>

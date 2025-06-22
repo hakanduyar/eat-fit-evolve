@@ -1,6 +1,7 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 import { MessageDialog } from './MessageDialog';
 
 interface ClientDetailHeaderProps {
@@ -18,6 +19,8 @@ export function ClientDetailHeader({
   onNavigateBack, 
   onStatusChange 
 }: ClientDetailHeaderProps) {
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -34,9 +37,16 @@ export function ClientDetailHeader({
       </div>
       
       <div className="flex items-center gap-2">
-        <MessageDialog 
-          clientId={clientId}
-          clientName={clientName}
+        <Button variant="outline" onClick={() => setMessageDialogOpen(true)}>
+          <MessageCircle className="w-4 h-4 mr-2" />
+          Mesaj Gönder
+        </Button>
+        
+        <MessageDialog
+          isOpen={messageDialogOpen}
+          onClose={() => setMessageDialogOpen(false)}
+          recipientId={clientId}
+          connectionId="" // This will need to be passed from parent
         />
         
         {status === 'active' ? (

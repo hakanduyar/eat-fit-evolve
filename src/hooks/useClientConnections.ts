@@ -74,13 +74,13 @@ export function useClientConnections() {
         return;
       }
 
-      // Type assertion to handle the complex joined data
+      // Type assertion to handle the complex joined data with null checks
       const typedConnections = (data || []).map(connection => ({
         ...connection,
-        client_profile: connection.client_profile && typeof connection.client_profile === 'object' && !('error' in connection.client_profile) 
+        client_profile: connection.client_profile && typeof connection.client_profile === 'object' && !Array.isArray(connection.client_profile) && !('error' in connection.client_profile) 
           ? connection.client_profile as { id: string; full_name: string; email: string; phone: string | null; }
           : null,
-        professional_profile: connection.professional_profile && typeof connection.professional_profile === 'object' && !('error' in connection.professional_profile)
+        professional_profile: connection.professional_profile && typeof connection.professional_profile === 'object' && !Array.isArray(connection.professional_profile) && !('error' in connection.professional_profile)
           ? connection.professional_profile as { id: string; full_name: string; email: string; phone: string | null; }
           : null
       })) as ClientConnection[];

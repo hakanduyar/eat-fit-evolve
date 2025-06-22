@@ -1,7 +1,10 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Users, Calendar, MessageCircle, TrendingUp } from "lucide-react";
+import { useState } from "react";
 import { useClientConnections } from "@/hooks/useClientConnections";
 import { AddClientDialog } from "@/components/clients/AddClientDialog";
 import { ClientCard } from "@/components/clients/ClientCard";
@@ -12,6 +15,7 @@ const Clients = () => {
   const { profile } = useAuth();
   const { connections, loading, updateConnectionStatus } = useClientConnections();
   const { toast } = useToast();
+  const [addClientDialogOpen, setAddClientDialogOpen] = useState(false);
 
   const handleStatusChange = async (connectionId: string, status: any) => {
     const { error } = await updateConnectionStatus(connectionId, status);
@@ -57,7 +61,9 @@ const Clients = () => {
             Danışanlarınızı yönetin ve ilerlemelerini takip edin
           </p>
         </div>
-        <AddClientDialog />
+        <Button onClick={() => setAddClientDialogOpen(true)}>
+          Yeni Danışan
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -159,6 +165,11 @@ const Clients = () => {
           <MessagesTab />
         </div>
       </div>
+
+      <AddClientDialog
+        isOpen={addClientDialogOpen}
+        onClose={() => setAddClientDialogOpen(false)}
+      />
     </div>
   );
 };

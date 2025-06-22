@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Clock, User, MessageCircle, Calendar, Phone, Mail } from 'lucide-react';
+import { useState } from 'react';
 import { useClientConnections } from '@/hooks/useClientConnections';
 import { CreateConnectionDialog } from './CreateConnectionDialog';
 import { NewMessageDialog } from './NewMessageDialog';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export function NewClientsTab() {
   const { profile } = useAuth();
   const { connections, loading, error, updateConnectionStatus } = useClientConnections();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   if (loading) {
     return (
@@ -79,7 +81,11 @@ export function NewClientsTab() {
               Danışan bağlantılarınız ve iletişim ({connections.length} bağlantı)
             </CardDescription>
           </div>
-          {profile?.role !== 'user' && <CreateConnectionDialog />}
+          {profile?.role !== 'user' && (
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              Yeni Bağlantı
+            </Button>
+          )}
         </div>
       </CardHeader>
       
@@ -212,6 +218,11 @@ export function NewClientsTab() {
           </ScrollArea>
         )}
       </CardContent>
+      
+      <CreateConnectionDialog
+        isOpen={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+      />
     </Card>
   );
 }

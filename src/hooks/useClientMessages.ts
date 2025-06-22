@@ -73,10 +73,10 @@ export function useClientMessages(connectionId?: string) {
         return;
       }
 
-      // Type assertion to handle the complex joined data
+      // Type assertion to handle the complex joined data with null checks
       const typedMessages = (data || []).map(message => ({
         ...message,
-        sender_profile: message.sender_profile && typeof message.sender_profile === 'object' && !('error' in message.sender_profile)
+        sender_profile: message.sender_profile && typeof message.sender_profile === 'object' && !Array.isArray(message.sender_profile) && !('error' in message.sender_profile)
           ? message.sender_profile as { full_name: string; role: string; }
           : null
       })) as ClientMessage[];

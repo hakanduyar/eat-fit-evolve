@@ -13,7 +13,7 @@ export type MealEntry = Database['public']['Tables']['meal_entries']['Row'] & {
     carbs_per_100g: number;
     fat_per_100g: number;
     fiber_per_100g: number;
-  };
+  } | null;
 };
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
@@ -45,15 +45,17 @@ export function useMealEntries(date?: string) {
   }, [user, targetDate]);
 
   const fetchMealEntries = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
       setError(null);
 
-      // First get daily nutrition for the date
-      const { data: dailyNutrition, error: dailyError } = await supabase
+      // First get or create daily nutrition for the date
+      let { data: dailyNutrition, error: dailyError } = await supabase
         .from('daily_nutrition')
         .select('id')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .eq('date', targetDate)
         .maybeSingle();
 
@@ -64,8 +66,23 @@ export function useMealEntries(date?: string) {
       }
 
       if (!dailyNutrition) {
-        setMealEntries([]);
-        return;
+        // Create daily nutrition record if it doesn't exist
+        const { data: newDaily, error: createError } = await supabase
+          .from('daily_nutrition')
+          .insert({
+            user_id: user.id,
+            date: targetDate
+          })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Error creating daily nutrition:', createError);
+          setError('Günlük beslenme verisi oluşturulamadı');
+          return;
+        }
+
+        dailyNutrition = newDaily;
       }
 
       const { data, error: fetchError } = await supabase
@@ -149,10 +166,10 @@ export function useMealEntries(date?: string) {
       // Calculate nutrition based on amount
       const multiplier = entryData.amount / 100; // Assuming base is per 100g
       const calories = Math.round(food.calories_per_100g * multiplier);
-      const protein = Math.round(food.protein_per_100g * multiplier);
-      const carbs = Math.round(food.carbs_per_100g * multiplier);
-      const fat = Math.round(food.fat_per_100g * multiplier);
-      const fiber = Math.round(food.fiber_per_100g * multiplier);
+      const protein = Math.round(Number(food.protein_per_100g) * multiplier);
+      const carbs = Math.round(Number(food.carbs_per_100g) * multiplier);
+      const fat = Math.round(Number(food.fat_per_100g) * multiplier);
+      const fiber = Math.round(Number(food.fiber_per_100g) * multiplier);
 
       const { data, error: insertError } = await supabase
         .from('meal_entries')
@@ -219,10 +236,10 @@ export function useMealEntries(date?: string) {
     return mealEntries.reduce(
       (total, entry) => ({
         calories: total.calories + entry.calories,
-        protein: total.protein + entry.protein,
-        carbs: total.carbs + entry.carbs,
-        fat: total.fat + entry.fat,
-        fiber: total.fiber + entry.fiber
+        protein: total.protein + Number(entry.protein),
+        carbs: total.carbs + Number(entry.carbs),
+        fat: total.fat + Number(entry.fat),
+        fiber: total.fiber + Number(entry.fiber)
       }),
       { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
     );

@@ -411,164 +411,32 @@ export type Database = {
           },
         ]
       }
-      meal_foods: {
+      password_reset_tokens: {
         Row: {
-          calories: number
-          carbs: number
-          created_at: string | null
-          fat: number
-          food_id: string
+          created_at: string
+          expires_at: string
           id: string
-          meal_id: string
-          protein: number
-          quantity_grams: number
-        }
-        Insert: {
-          calories: number
-          carbs: number
-          created_at?: string | null
-          fat: number
-          food_id: string
-          id?: string
-          meal_id: string
-          protein: number
-          quantity_grams: number
-        }
-        Update: {
-          calories?: number
-          carbs?: number
-          created_at?: string | null
-          fat?: number
-          food_id?: string
-          id?: string
-          meal_id?: string
-          protein?: number
-          quantity_grams?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meal_foods_food_id_fkey"
-            columns: ["food_id"]
-            isOneToOne: false
-            referencedRelation: "foods"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "meal_foods_meal_id_fkey"
-            columns: ["meal_id"]
-            isOneToOne: false
-            referencedRelation: "meals"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      meals: {
-        Row: {
-          created_at: string | null
-          date: string
-          id: string
-          meal_type: string
-          total_calories: number | null
-          total_carbs: number | null
-          total_fat: number | null
-          total_protein: number | null
-          updated_at: string | null
+          token: string
+          used_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string | null
-          date?: string
+          created_at?: string
+          expires_at: string
           id?: string
-          meal_type: string
-          total_calories?: number | null
-          total_carbs?: number | null
-          total_fat?: number | null
-          total_protein?: number | null
-          updated_at?: string | null
+          token: string
+          used_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string | null
-          date?: string
+          created_at?: string
+          expires_at?: string
           id?: string
-          meal_type?: string
-          total_calories?: number | null
-          total_carbs?: number | null
-          total_fat?: number | null
-          total_protein?: number | null
-          updated_at?: string | null
+          token?: string
+          used_at?: string | null
           user_id?: string
         }
         Relationships: []
-      }
-      message_threads: {
-        Row: {
-          client_id: string | null
-          created_at: string | null
-          dietitian_id: string | null
-          id: string
-          updated_at: string | null
-        }
-        Insert: {
-          client_id?: string | null
-          created_at?: string | null
-          dietitian_id?: string | null
-          id?: string
-          updated_at?: string | null
-        }
-        Update: {
-          client_id?: string | null
-          created_at?: string | null
-          dietitian_id?: string | null
-          id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      messages: {
-        Row: {
-          content: string
-          id: string
-          message_type: string | null
-          read_at: string | null
-          sender_id: string | null
-          sent_at: string | null
-          thread_id: string | null
-        }
-        Insert: {
-          content: string
-          id?: string
-          message_type?: string | null
-          read_at?: string | null
-          sender_id?: string | null
-          sent_at?: string | null
-          thread_id?: string | null
-        }
-        Update: {
-          content?: string
-          id?: string
-          message_type?: string | null
-          read_at?: string | null
-          sender_id?: string | null
-          sent_at?: string | null
-          thread_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_thread_id_fkey"
-            columns: ["thread_id"]
-            isOneToOne: false
-            referencedRelation: "message_threads"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       professional_profiles: {
         Row: {

@@ -2,25 +2,17 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-export type ClientMessage = {
-  id: string;
-  connection_id: string;
-  sender_id: string;
-  recipient_id: string;
-  message: string;
-  message_type: 'text';
-  sent_at: string;
-  read_at: string | null;
-  created_at: string;
+export type ClientMessage = Database['public']['Tables']['client_messages']['Row'] & {
   sender_profile?: {
     full_name: string;
     role: string;
-  };
+  } | null;
 };
 
 export function useClientMessages(connectionId?: string) {
-  const { user } = useAuth(); // Use user instead of profile for auth.uid()
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ClientMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +25,27 @@ export function useClientMessages(connectionId?: string) {
     }
 
     fetchMessages();
+    
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel(`messages-${connectionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'client_messages',
+          filter: `connection_id=eq.${connectionId}`
+        },
+        () => {
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [user, connectionId]);
 
   const fetchMessages = async () => {
@@ -44,7 +57,13 @@ export function useClientMessages(connectionId?: string) {
 
       const { data, error: fetchError } = await supabase
         .from('client_messages')
-        .select('*')
+        .select(`
+          *,
+          sender_profile:profiles!client_messages_sender_id_fkey(
+            full_name,
+            role
+          )
+        `)
         .eq('connection_id', connectionId)
         .order('sent_at', { ascending: true });
 
@@ -54,13 +73,7 @@ export function useClientMessages(connectionId?: string) {
         return;
       }
 
-      const typedMessages = (data || []).map(item => ({
-        ...item,
-        message_type: item.message_type as 'text',
-        sender_profile: undefined
-      })) as ClientMessage[];
-
-      setMessages(typedMessages);
+      setMessages(data || []);
     } catch (err) {
       console.error('Unexpected error fetching messages:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -72,7 +85,7 @@ export function useClientMessages(connectionId?: string) {
   const sendMessage = async (
     recipientId: string,
     message: string,
-    messageType: ClientMessage['message_type'] = 'text'
+    messageType: 'text' = 'text'
   ) => {
     if (!user || !connectionId || !message.trim()) {
       return { error: 'Geçersiz mesaj' };
@@ -96,7 +109,6 @@ export function useClientMessages(connectionId?: string) {
         return { error: 'Mesaj gönderilemedi' };
       }
 
-      await fetchMessages();
       return { data, error: null };
     } catch (err) {
       console.error('Unexpected error sending message:', err);
@@ -105,19 +117,20 @@ export function useClientMessages(connectionId?: string) {
   };
 
   const markAsRead = async (messageId: string) => {
+    if (!user) return { error: 'Kullanıcı oturumu bulunamadı' };
+
     try {
       const { error } = await supabase
         .from('client_messages')
         .update({ read_at: new Date().toISOString() })
         .eq('id', messageId)
-        .eq('recipient_id', user?.id);
+        .eq('recipient_id', user.id);
 
       if (error) {
         console.error('Error marking message as read:', error);
         return { error: 'Mesaj okundu olarak işaretlenemedi' };
       }
 
-      await fetchMessages();
       return { error: null };
     } catch (err) {
       console.error('Unexpected error marking message as read:', err);

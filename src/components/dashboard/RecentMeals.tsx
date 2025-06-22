@@ -2,19 +2,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Utensils, Plus, Clock } from "lucide-react";
-import { useMeals } from "@/hooks/useMeals";
+import { useMealEntries } from "@/hooks/useMealEntries";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const RecentMeals = () => {
   const { profile } = useAuth();
-  const { meals, loading } = useMeals();
+  const { mealEntries, loading } = useMealEntries();
 
   const getMealTypeDisplayName = (mealType: string) => {
     const mealNames = {
       breakfast: 'Kahvaltı',
       lunch: 'Öğle Yemeği',
       dinner: 'Akşam Yemeği',
-      snack: 'Ara Öğün'
+      snacks: 'Ara Öğün'
     };
     return mealNames[mealType as keyof typeof mealNames] || mealType;
   };
@@ -85,24 +85,31 @@ export const RecentMeals = () => {
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : meals.length > 0 ? (
+        ) : mealEntries.length > 0 ? (
           <div className="space-y-4">
-            {meals.map((meal) => (
-              <div key={meal.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            {mealEntries.slice(0, 3).map((entry) => (
+              <div key={entry.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div>
-                  <h4 className="font-medium">{getMealTypeDisplayName(meal.meal_type)}</h4>
+                  <h4 className="font-medium">
+                    {getMealTypeDisplayName(entry.meal_type)}
+                    {entry.food && (
+                      <span className="text-sm font-normal text-gray-600 ml-2">
+                        • {entry.food.name}
+                      </span>
+                    )}
+                  </h4>
                   <p className="text-sm text-gray-600">
-                    {meal.total_calories || 0} kalori
-                    {meal.created_at && (
+                    {entry.calories || 0} kalori
+                    {entry.eaten_at && (
                       <>
                         {" • "}
                         <Clock className="w-3 h-3 inline mr-1" />
-                        {formatTime(meal.created_at)}
+                        {formatTime(entry.eaten_at)}
                       </>
                     )}
                   </p>
                 </div>
-                <Button variant="outline" size="sm">Düzenle</Button>
+                <Button variant="outline" size="sm">Detay</Button>
               </div>
             ))}
           </div>

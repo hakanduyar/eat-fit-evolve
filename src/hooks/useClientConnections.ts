@@ -2,30 +2,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 
-export type ClientConnection = {
-  id: string;
-  client_id: string;
-  dietitian_id: string;
-  status: 'pending' | 'active' | 'paused' | 'terminated';
-  connection_type: 'nutrition_only' | 'fitness_only' | 'full_support';
-  start_date: string | null;
-  end_date: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
+export type ClientConnection = Database['public']['Tables']['client_connections']['Row'] & {
   client_profile?: {
     id: string;
     full_name: string;
     email: string;
     phone: string | null;
-  };
+  } | null;
   professional_profile?: {
     id: string;
     full_name: string;
     email: string;
     phone: string | null;
-  };
+  } | null;
 };
 
 export function useClientConnections() {
@@ -51,14 +42,28 @@ export function useClientConnections() {
       setLoading(true);
       setError(null);
 
-      const query = supabase
+      let query = supabase
         .from('client_connections')
-        .select('*');
+        .select(`
+          *,
+          client_profile:profiles!client_connections_client_id_fkey(
+            id,
+            full_name,
+            email,
+            phone
+          ),
+          professional_profile:profiles!client_connections_dietitian_id_fkey(
+            id,
+            full_name,
+            email,
+            phone
+          )
+        `);
 
       if (profile.role === 'user') {
-        query.eq('client_id', user.id);
+        query = query.eq('client_id', user.id);
       } else {
-        query.eq('dietitian_id', user.id);
+        query = query.eq('dietitian_id', user.id);
       }
 
       const { data, error: fetchError } = await query.order('created_at', { ascending: false });
@@ -69,15 +74,7 @@ export function useClientConnections() {
         return;
       }
 
-      const typedConnections = (data || []).map(item => ({
-        ...item,
-        status: item.status as 'pending' | 'active' | 'paused' | 'terminated',
-        connection_type: item.connection_type as 'nutrition_only' | 'fitness_only' | 'full_support',
-        client_profile: undefined,
-        professional_profile: undefined
-      })) as ClientConnection[];
-
-      setConnections(typedConnections);
+      setConnections(data || []);
     } catch (err) {
       console.error('Unexpected error fetching connections:', err);
       setError('Beklenmeyen bir hata oluştu');
@@ -88,8 +85,7 @@ export function useClientConnections() {
 
   const createConnection = async (
     clientEmail: string, 
-    connectionType: ClientConnection['connection_type'],
-    professionalType: 'dietitian' | 'trainer',
+    connectionType: 'nutrition_only' | 'fitness_only' | 'full_support',
     notes?: string
   ) => {
     if (!user || !profile || profile.role === 'user') {
@@ -108,6 +104,18 @@ export function useClientConnections() {
         return { error: 'Danışan bulunamadı' };
       }
 
+      // Check if connection already exists
+      const { data: existingConnection } = await supabase
+        .from('client_connections')
+        .select('id')
+        .eq('client_id', clientProfile.user_id)
+        .eq('dietitian_id', user.id)
+        .maybeSingle();
+
+      if (existingConnection) {
+        return { error: 'Bu danışan ile zaten bir bağlantı var' };
+      }
+
       const { data, error: insertError } = await supabase
         .from('client_connections')
         .insert({
@@ -122,9 +130,6 @@ export function useClientConnections() {
 
       if (insertError) {
         console.error('Error creating connection:', insertError);
-        if (insertError.code === '23505') {
-          return { error: 'Bu danışan ile zaten bir bağlantı var' };
-        }
         return { error: 'Bağlantı oluşturulamadı' };
       }
 
@@ -138,7 +143,7 @@ export function useClientConnections() {
 
   const updateConnectionStatus = async (
     connectionId: string, 
-    status: ClientConnection['status']
+    status: 'pending' | 'active' | 'paused' | 'terminated'
   ) => {
     try {
       const { error: updateError } = await supabase

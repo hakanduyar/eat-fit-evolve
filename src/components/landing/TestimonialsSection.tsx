@@ -64,9 +64,8 @@ export function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.name}
-              className="group bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:rotate-0 hover:scale-105 cursor-pointer"
+              className="group p-8 rounded-3xl bg-gradient-to-br from-gray-50 to-white border border-gray-100 hover:border-green-200 hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:rotate-1"
               style={{
-                transform: `rotate(${Math.random() * 6 - 3}deg)`,
                 animationDelay: `${index * 0.1}s`
               }}
             >

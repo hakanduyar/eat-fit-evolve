@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { WidgetManager } from "@/components/widget/WidgetManager";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Nutrition from "./pages/Nutrition";
@@ -31,6 +32,7 @@ const queryClient = new QueryClient({
 const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <WidgetManager />
       <TooltipProvider>
         <Toaster />
         <Sonner />

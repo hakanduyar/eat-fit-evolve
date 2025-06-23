@@ -3,6 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { WidgetManager } from '@/components/widget/WidgetManager'
 
 // Add mobile viewport meta tag if not already present
 if (!document.querySelector('meta[name="viewport"]')) {
@@ -20,5 +21,6 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <App />
+    <WidgetManager />
   </React.StrictMode>,
 )

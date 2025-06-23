@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
       launchShowDuration: 2000,
       backgroundColor: '#16a34a',
       showSpinner: false
+    },
+    Widget: {
+      android: {
+        src: 'app.lovable.nutritrack.WidgetPlugin'
+      }
     }
   }
 };

@@ -9,25 +9,25 @@ export function HeroSection() {
 
   return (
     <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-32 overflow-hidden min-h-screen flex items-center">
-      {/* Floating Elements with Blueprint-style positioning */}
+      {/* Floating Elements - positioned to avoid text overlap on mobile */}
       <FloatingElement 
         icon={Zap} 
-        className="absolute top-24 left-8 sm:top-32 sm:left-16 text-yellow-500" 
+        className="absolute top-16 left-2 sm:top-32 sm:left-16 text-yellow-500" 
         delay={0}
       />
       <FloatingElement 
         icon={TrendingUp} 
-        className="absolute top-40 right-8 sm:top-48 sm:right-20 text-green-500" 
+        className="absolute top-20 right-2 sm:top-48 sm:right-20 text-green-500" 
         delay={1}
       />
       <FloatingElement 
         icon={FileText} 
-        className="absolute bottom-32 left-12 sm:bottom-40 sm:left-24 text-blue-500" 
+        className="absolute bottom-40 left-4 sm:bottom-40 sm:left-24 text-blue-500" 
         delay={2}
       />
       <FloatingElement 
         icon={FileText} 
-        className="absolute bottom-20 right-16 sm:bottom-28 sm:right-32 text-purple-500" 
+        className="absolute bottom-16 right-4 sm:bottom-28 sm:right-32 text-purple-500" 
         delay={1.5}
       />
 
